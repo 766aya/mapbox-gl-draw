@@ -30,7 +30,15 @@ export const cursors = {
 export const types = {
   POLYGON: 'polygon',
   LINE: 'line_string',
-  POINT: 'point'
+  POINT: 'point',
+  CIRCLE: 'circle',
+  SECTOR: 'sector',
+  ARC: 'arc',
+  CURVE: 'curve',
+  GATHER_PLACE:'gather_place',
+  DOUBLE_ARROW:'double_arrow',
+  TAILED_SQUAD_COMBAT:'tailed_squad_combat',
+  LINE_ARROW:'line_arrow',
 };
 
 export const geojsonTypes = {
@@ -51,6 +59,7 @@ export const modes = {
   DRAW_POINT: 'draw_point',
   SIMPLE_SELECT: 'simple_select',
   DIRECT_SELECT: 'direct_select',
+  DRAW_SECTOR: 'draw_sector',
   STATIC: 'static'
 };
 
