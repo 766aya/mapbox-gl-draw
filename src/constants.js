@@ -14,6 +14,16 @@ export const classes = {
   BOX_SELECT: 'mapbox-gl-draw_boxselect'
 };
 
+export const properties = {
+  RADIUS: 'radius',
+  CENTER: 'center',
+  BEARING: 'bearing',
+  BEARING1: 'bearing1',
+  BEARING2: 'bearing2',
+  UNITS: "units",
+  STEPS: 'steps'
+};
+
 export const sources = {
   HOT: 'mapbox-gl-draw-hot',
   COLD: 'mapbox-gl-draw-cold'
@@ -59,8 +69,9 @@ export const modes = {
   DRAW_POINT: 'draw_point',
   SIMPLE_SELECT: 'simple_select',
   DIRECT_SELECT: 'direct_select',
+  STATIC: 'static',
+  DRAW_CIRCLE: 'draw_circle',
   DRAW_SECTOR: 'draw_sector',
-  STATIC: 'static'
 };
 
 export const events = {

@@ -4,9 +4,10 @@ import constrainFeatureMovement from '../lib/constrain_feature_movement';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import moveFeatures from '../lib/move_features';
-
-import createVertex from '../lib/create_vertex';
-import DrawUtil from '../util/DrawUtils';
+import { getCircleCenter, isCircle } from '../util/circleGeojson';
+import { distance, initialBearing } from '../util/geodesy';
+import createGeodesicGeojson from '../util/createGeodesicGeojson';
+import { getSectorCenter, isSector } from '../util/sectorGeojson';
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -80,13 +81,32 @@ DirectSelect.dragFeature = function (state, e, delta) {
 };
 
 DirectSelect.dragVertex = function (state, e, delta) {
-  const splitElement = state.selectedCoordPaths[0].split('.')[1];
-  const points = state.feature.properties.points;
-  if (points) {
-    const type = state.feature.properties.type;
-    const tempArg = state.feature.properties.tempArg;
-    points[splitElement] = [e.lngLat.lng, e.lngLat.lat];
-    state.feature.incomingCoords(DrawUtil.drawPlot(type, points, tempArg));
+  const geojson = state.feature.toGeoJSON();
+  if (isCircle(geojson)) {
+    if (state.selectedCoordPaths[0] === '0.1') {
+      const center = getCircleCenter(geojson);
+      const handle = [e.lngLat.lng, e.lngLat.lat];
+      const radius = distance(center, handle);
+      const handleBearing = initialBearing(center, handle);
+      state.feature.properties[Constants.properties.RADIUS] = radius;
+      state.feature.properties[Constants.properties.BEARING] = handleBearing;
+      state.feature.changed();
+    } else {
+      DirectSelect.dragFeature.call(this, state, e, delta);
+    }
+  } else if (isSector(geojson)) {
+    const handle = [e.lngLat.lng, e.lngLat.lat];
+    if (state.selectedCoordPaths[0] === '0.1' || state.selectedCoordPaths[0] === '0.2') {
+      const center = getSectorCenter(geojson);
+      const radius = distance(center, handle);
+      const handleBearing = initialBearing(center, handle);
+      const bearingFlag = state.selectedCoordPaths[0] === '0.1' ? Constants.properties.BEARING1 : Constants.properties.BEARING2;
+      state.feature.properties[bearingFlag] = handleBearing;
+      state.feature.properties[Constants.properties.RADIUS] = radius;
+      state.feature.changed();
+    } else {
+      DirectSelect.dragFeature.call(this, state, e, delta);
+    }
   } else {
     const selectedCoords = state.selectedCoordPaths.map(coord_path => state.feature.getCoordinate(coord_path));
     const selectedCoordPoints = selectedCoords.map(coords => ({
@@ -110,8 +130,19 @@ DirectSelect.clickNoTarget = function () {
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
-DirectSelect.clickInactive = function () {
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
+DirectSelect.clickInactive = function (state, e) {
+  // this.changeMode(Constants.modes.SIMPLE_SELECT);
+  if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
+    // switch to direct_select mode for polygon/line features
+    this.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: e.featureTarget.properties.id
+    });
+  } else {
+    // switch to simple_select mode for point features
+    this.changeMode(Constants.modes.SIMPLE_SELECT, {
+      featureIds: [e.featureTarget.properties.id]
+    });
+  }
 };
 
 DirectSelect.clickActiveFeature = function (state) {
@@ -160,36 +191,24 @@ DirectSelect.onStop = function () {
 };
 
 DirectSelect.toDisplayFeatures = function (state, geojson, push) {
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx, selectedPaths: state.selectedCoordPaths });
+    geodesicGeojson.forEach(push);
+  };
+
   if (state.featureId === geojson.properties.id) {
     geojson.properties.active = Constants.activeStates.ACTIVE;
-    push(geojson);
-    const points = this.getFeature(geojson.properties.id).properties.points;
-
-    const supplementaryPoints = points ? createSupplementaryThroughPoints(points, geojson.properties.id) : createSupplementaryPoints(geojson, {
+    displayGeodesic(geojson);
+    createSupplementaryPoints(geojson, {
       map: this.map,
       midpoints: true,
       selectedPaths: state.selectedCoordPaths
-    });
-
-    supplementaryPoints.forEach(push);
-
-
+    }).forEach(displayGeodesic);
   } else {
     geojson.properties.active = Constants.activeStates.INACTIVE;
-    push(geojson);
+    displayGeodesic(geojson);
   }
   this.fireActionable(state);
-
-  function createSupplementaryThroughPoints(points, featureId) {
-
-    const supplementaryPoints = [];
-
-    for (let index = 0; index < points.length; index++) {
-      supplementaryPoints.push(createVertex(featureId, points[index], `0.${index}`, false));
-    }
-    return supplementaryPoints;
-  }
-
 };
 
 DirectSelect.onTrash = function (state) {
@@ -217,22 +236,25 @@ DirectSelect.onMouseMove = function (state, e) {
   else if (onVertex && !noCoords) this.updateUIClasses({mouse: Constants.cursors.MOVE});
   else this.updateUIClasses({mouse: Constants.cursors.NONE});
   this.stopDragging(state);
-
   // Skip render
+
+  // show pointer cursor on inactive features, move cursor on active feature vertices
+  const onMidpoint = isOfMetaType(Constants.meta.MIDPOINT)(e);
+  if (isFeature || onMidpoint) this.updateUIClasses({ mouse: Constants.cursors.POINTER });
+  else if (onVertex) this.updateUIClasses({ mouse: Constants.cursors.MOVE });
+  else this.updateUIClasses({ mouse: Constants.cursors.NONE });
+
   return true;
 };
 
 DirectSelect.onMouseOut = function (state) {
   // As soon as you mouse leaves the canvas, update the feature
   if (state.dragMoving) this.fireUpdate();
-
   // Skip render
   return true;
 };
 
 DirectSelect.onTouchStart = DirectSelect.onMouseDown = function (state, e) {
-
-
   if (isVertex(e)) return this.onVertex(state, e);
   if (isActiveFeature(e)) return this.onFeature(state, e);
   if (isMidpoint(e)) return this.onMidpoint(state, e);

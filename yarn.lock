@@ -2443,6 +2443,11 @@ append-transform@^2.0.0:
   dependencies:
     default-require-extensions "^3.0.0"
 
+arc@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.npmjs.org/arc/-/arc-0.1.4.tgz#612aa5f00b0acea16ba3bdf5f334720887544656"
+  integrity sha512-aPE8qoZ64NR6zCMN+WFNvLmsv74OfEWGZGV90odFGUKSTILqm2I81Zkyfy+7uw0UjEfGbIBMIilChAHCrgMdmQ==
+
 archy@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/archy/-/archy-1.0.0.tgz#f9c8c13757cc1dd7bc379ac77b2c62a5c2868c40"
@@ -3526,6 +3531,11 @@ gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
+
+geodesy-fn@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/geodesy-fn/-/geodesy-fn-1.0.1.tgz#0fe6a0929f939ae997d6a41528e4a2d646c00e00"
+  integrity sha512-UDPi0tDyPtrYeHJnLOjEAxP3mfFlq8h15+wbj8tN5AvbUT62pst2q7jyZTM+btHjaX3CDcK6Iriv5kvV19FXtg==
 
 geojson-equality@0.1.6:
   version "0.1.6"

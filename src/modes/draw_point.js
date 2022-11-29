@@ -1,5 +1,6 @@
 import * as CommonSelectors from '../lib/common_selectors';
 import * as Constants from '../constants';
+import createGeodesicGeojson from '../util/createGeodesicGeojson';
 
 const DrawPoint = {};
 
@@ -48,10 +49,14 @@ DrawPoint.onStop = function(state) {
 };
 
 DrawPoint.toDisplayFeatures = function(state, geojson, display) {
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
+    geodesicGeojson.forEach(display);
+  };
   // Never render the point we're drawing
   const isActivePoint = geojson.properties.id === state.point.id;
   geojson.properties.active = (isActivePoint) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
-  if (!isActivePoint) return display(geojson);
+  if (!isActivePoint) return displayGeodesic(geojson);
 };
 
 DrawPoint.onTrash = DrawPoint.stopDrawingAndRemove;

@@ -3,6 +3,7 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import createVertex from '../lib/create_vertex';
+import createGeodesicGeojson from '../util/createGeodesicGeojson';
 
 const DrawPolygon = {};
 
@@ -88,9 +89,14 @@ DrawPolygon.onStop = function(state) {
 };
 
 DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
+    geodesicGeojson.forEach(display);
+  };
+
   const isActivePolygon = geojson.properties.id === state.polygon.id;
   geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
-  if (!isActivePolygon) return display(geojson);
+  if (!isActivePolygon) return displayGeodesic(geojson);
 
   // Don't render a polygon until it has two positions
   // (and a 3rd which is just the first repeated)
@@ -103,12 +109,12 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
     return;
   }
   geojson.properties.meta = Constants.meta.FEATURE;
-  display(createVertex(state.polygon.id, geojson.geometry.coordinates[0][0], '0.0', false));
+  displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][0], '0.0', false));
   if (coordinateCount > 3) {
     // Add a start position marker to the map, clicking on this will finish the feature
     // This should only be shown when we're in a valid spot
     const endPos = geojson.geometry.coordinates[0].length - 3;
-    display(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false));
+    displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false));
   }
   if (coordinateCount <= 4) {
     // If we've only drawn two positions (plus the closer),
@@ -117,7 +123,7 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
       [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]
     ];
     // create an initial vertex so that we can track the first point on mobile devices
-    display({
+    displayGeodesic({
       type: Constants.geojsonTypes.FEATURE,
       properties: geojson.properties,
       geometry: {
@@ -130,7 +136,7 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
     }
   }
   // render the Polygon
-  return display(geojson);
+  return displayGeodesic(geojson);
 };
 
 DrawPolygon.onTrash = function(state) {

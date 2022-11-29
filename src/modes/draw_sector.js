@@ -1,144 +1,94 @@
-import * as CommonSelectors from '../lib/common_selectors';
+import * as CommonSelectors from "../lib/common_selectors";
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
-import DrawUtil from "../util/DrawUtils";
+import dragPan from '../util/dragPan';
+import { createSector, updateSector } from '../util/sectorGeojson';
+import createGeodesicGeojson from '../util/createGeodesicGeojson';
+import { distance, initialBearing } from '../util/geodesy';
 
 //扇形
-const DRAW_SECTOR = {};
+const DrawSector = {};
 
-DRAW_SECTOR.onSetup = function () {
-  const polygon = this.newFeature({
-    type: Constants.geojsonTypes.FEATURE,
-    properties: {
-      type: 'sector',
-      points: []
-    },
-    geometry: {
-      type: Constants.geojsonTypes.POLYGON,
-      coordinates: [[]]
-    }
-  });
-
-  this.addFeature(polygon);
-
+DrawSector.onSetup = function() {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
-  this.map.dragPan.disable();
-  this.updateUIClasses({mouse: Constants.cursors.ADD});
-  this.activateUIButton(Constants.types.POLYGON);
-  this.setActionableState({
-    trash: true
-  });
-
-  return {
-    polygon,
-    currentVertexPosition: 0
-  };
+  dragPan.disable(this);
+  this.updateUIClasses({ mouse: Constants.cursors.ADD });
+  this.setActionableState(); // default actionable state is false for all actions
+  return {};
 };
 
-DRAW_SECTOR.clickAnywhere = function (state, e) {
-  if (state.currentVertexPosition === 0) {
-    state.currentVertexPosition++;
+DrawSector.onMouseDown = DrawSector.onTouchStart = function(state, e) {
+  const handle = [e.lngLat.lng, e.lngLat.lat];
+  if (!state.sector) {
+    const center = handle;
+    const sector = this.newFeature(createSector(center, Number.EPSILON, 0, 0 + Number.EPSILON, { featureType: "sector" }));
+    this.addFeature(sector);
+    state.sector = sector;
     return;
   }
-
-  const points = state.polygon.properties.points;
-
-  if (points.length > 1) {
-
-    const circleFeature = this.generate(points, [e.lngLat.lng, e.lngLat.lat]);
-    state.polygon.incomingCoords(circleFeature);
-    // return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
-  }
-  if (points.length > 2) {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, {featureIds: [state.polygon.id]});
-  }
-
-};
-
-DRAW_SECTOR.onMouseMove = function (state, e) {
-  state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
-  if (CommonSelectors.isVertex(e)) {
-    this.updateUIClasses({mouse: Constants.cursors.POINTER});
+  if (state.sector && !state[Constants.properties.BEARING1] && !state[Constants.properties.BEARING2]) {
+    const center = state.sector.properties[Constants.properties.CENTER];
+    const radius = distance(center, handle);
+    const bearing1 = initialBearing(center, handle);
+    const { geometry, properties } = updateSector(center, radius, bearing1, bearing1 - Number.EPSILON, state.sector.toGeoJSON());
+    state.sector.coordinates = geometry.coordinates;
+    state.sector.properties = properties;
+    state[Constants.properties.BEARING1] = bearing1;
+    state.sector.changed();
   }
 };
 
-DRAW_SECTOR.onTap = DRAW_SECTOR.onClick = function (state, e) {
-  if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
-  return this.clickAnywhere(state, e);
+DrawSector.onMouseMove = function (state, e) {
+  if (state.sector && state[Constants.properties.BEARING1]) {
+    const handle = [e.lngLat.lng, e.lngLat.lat];
+    const center = state.sector.properties[Constants.properties.CENTER];
+    const bearing2 = initialBearing(center, handle);
+    const { geometry, properties } = updateSector(center, state.sector.properties[Constants.properties.RADIUS], state[Constants.properties.BEARING1], bearing2, state.sector.toGeoJSON());
+    state.sector.coordinates = geometry.coordinates;
+    state.sector.properties = properties;
+    state[Constants.properties.BEARING2] = bearing2;
+    state.sector.changed();
+  }
 };
 
-DRAW_SECTOR.onKeyUp = function (state, e) {
+DrawSector.onClick = DrawSector.onTap = function(state) {
+  if (state[Constants.properties.BEARING2]) {
+    this.map.fire(Constants.events.CREATE, { features: [state.sector.toGeoJSON()] });
+    return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.sector.id] });
+  }
+};
+
+DrawSector.onKeyUp = function(state, e) {
   if (CommonSelectors.isEscapeKey(e)) {
-    this.deleteFeature([state.polygon.id], {silent: true});
+    if (state.sector) {
+      this.deleteFeature([state.sector.id], { silent: true });
+    }
     this.changeMode(Constants.modes.SIMPLE_SELECT);
   } else if (CommonSelectors.isEnterKey(e)) {
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {featureIds: [state.polygon.id]});
+    this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.sector.id] });
   }
 };
 
-DRAW_SECTOR.onStop = function (state) {
-  this.updateUIClasses({mouse: Constants.cursors.NONE});
+DrawSector.onStop = function() {
+  this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
+  dragPan.enable(this);
   this.activateUIButton();
+};
 
-  // check to see if we've deleted this feature
-  if (this.getFeature(state.polygon.id) === undefined) return;
-
-  //remove last added coordinate
-  // state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
-  if (state.polygon.isValid()) {
-    this.map.fire(Constants.events.CREATE, {
-      features: [state.polygon.toGeoJSON()]
-    });
-  } else {
-    this.deleteFeature([state.polygon.id], {silent: true});
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {}, {silent: true});
+DrawSector.toDisplayFeatures = function(state, geojson, display) {
+  if (state.sector) {
+    const isActivePolygon = geojson.properties.id === state.sector.id;
+    geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
   }
+
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
+    geodesicGeojson.forEach(display);
+  };
+
+  displayGeodesic(geojson);
 };
 
-DRAW_SECTOR.toDisplayFeatures = function (state, geojson, display) {
-
-  const isActivePolygon = geojson.properties.id === state.polygon.id;
-  geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
-  return display(geojson);
-};
-
-DRAW_SECTOR.onTrash = function (state) {
-  this.deleteFeature([state.polygon.id], {silent: true});
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
-};
-
-
-DRAW_SECTOR.onMouseDown = DRAW_SECTOR.onTouchStart = function (state, e) {
-  const currentPoints = state.polygon.properties.points;
-  if (currentPoints.length < 3) {
-    state.polygon.properties.points.push([e.lngLat.lng, e.lngLat.lat]);
-  }
-};
-
-DRAW_SECTOR.onDrag = DRAW_SECTOR.onMouseMove = function (state, e) {
-  const points = state.polygon.properties.points;
-  if (points.length > 1) {
-    const circleFeature = this.generate(points, [e.lngLat.lng, e.lngLat.lat]);
-    state.polygon.incomingCoords(circleFeature);
-  }
-};
-
-DRAW_SECTOR.onMouseUp = DRAW_SECTOR.onTouchEnd = function (state) {
-  this.map.dragPan.enable();
-  return this.changeMode(Constants.modes.SIMPLE_SELECT, {featureIds: [state.polygon.id]});
-};
-export default DRAW_SECTOR;
-
-DRAW_SECTOR.generate = function (points, coordinate) {
-  const pnts = [];
-
-  const length = points.length;
-  Object.assign(pnts, points);
-  if (length === 0 || pnts[length - 1][0] !== coordinate[0]) {
-    pnts.push(coordinate);
-  }
-  return DrawUtil.drawSector(pnts);
-
-};
+export default DrawSector;

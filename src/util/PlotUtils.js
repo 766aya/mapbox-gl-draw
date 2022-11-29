@@ -11,18 +11,18 @@ PlotUtils.Constants = {
 PlotUtils.wgsToMercator = function (point) {
   const wgsLon = point[0];
   const wgsLat = point[1];
-  const x = wgsLon * 20037508.34 / 180.;
-  let y = Math.log(Math.tan((90. + wgsLat) * Math.PI / 360.)) / (Math.PI / 180.);
-  y = y * 20037508.34 / 180.;
+  const x = wgsLon * 20037508.34 / 180;
+  let y = Math.log(Math.tan((90 + wgsLat) * Math.PI / 360)) / (Math.PI / 180);
+  y = y * 20037508.34 / 180;
   return [x, y];
 };
 
 PlotUtils.mercatorToWGS = function (point) {
   const mercatorLon = point[0];
   const mercatorLat = point[1];
-  const x = mercatorLon / 20037508.34 * 180.;
-  let y = mercatorLat / 20037508.34 * 180.;
-  y = 180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180.)) - Math.PI / 2);
+  const x = mercatorLon / 20037508.34 * 180;
+  let y = mercatorLat / 20037508.34 * 180;
+  y = 180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180)) - Math.PI / 2);
   return [x, y];
 };
 

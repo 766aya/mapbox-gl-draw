@@ -3,6 +3,7 @@ import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import createVertex from '../lib/create_vertex';
+import createGeodesicFeature from "../util/createGeodesicGeojson";
 
 const DrawLineString = {};
 
@@ -133,20 +134,26 @@ DrawLineString.onTrash = function(state) {
 };
 
 DrawLineString.toDisplayFeatures = function(state, geojson, display) {
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicFeature(geojson, { ctx: this._ctx });
+    geodesicGeojson.forEach(display);
+  };
+
   const isActiveLine = geojson.properties.id === state.line.id;
   geojson.properties.active = (isActiveLine) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
-  if (!isActiveLine) return display(geojson);
+  if (!isActiveLine) return displayGeodesic(geojson);
   // Only render the line if it has at least one real coordinate
   if (geojson.geometry.coordinates.length < 2) return;
   geojson.properties.meta = Constants.meta.FEATURE;
-  display(createVertex(
+
+  displayGeodesic(createVertex(
     state.line.id,
     geojson.geometry.coordinates[state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1],
     `${state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1}`,
     false
   ));
 
-  display(geojson);
+  displayGeodesic(geojson);
 };
 
 export default DrawLineString;

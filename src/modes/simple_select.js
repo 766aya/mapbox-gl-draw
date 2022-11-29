@@ -6,6 +6,7 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import moveFeatures from '../lib/move_features';
 import * as Constants from '../constants';
 import createVertex from "../lib/create_vertex";
+import createGeodesicGeojson from '../util/createGeodesicGeojson';
 
 const SimpleSelect = {};
 
@@ -20,7 +21,6 @@ SimpleSelect.onSetup = function (opts) {
     dragMoving: false,
     canDragMove: false,
     initiallySelectedFeatureIds: opts.featureIds || []
-
   };
 
   this.setSelected(state.initiallySelectedFeatureIds.filter(id => this.getFeature(id) !== undefined));
@@ -127,7 +127,6 @@ SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
 };
 
 SimpleSelect.clickAnywhere = function (state) {
-  // Clear the re-render selection
   const wasSelected = this.getSelectedIds();
   if (wasSelected.length) {
     this.clearSelectedFeatures();
@@ -163,46 +162,53 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
-  // Stop everything
-  doubleClickZoom.disable(this);
-  this.stopExtendedInteractions(state);
-
-  const isShiftClick = CommonSelectors.isShiftDown(e);
-  const selectedFeatureIds = this.getSelectedIds();
-  const featureId = e.featureTarget.properties.id;
-  const isFeatureSelected = this.isSelected(featureId);
-
-  // Click (without shift) on any selected feature but a point
-  if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== Constants.geojsonTypes.POINT) {
-    // Enter direct select mode
-    return this.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId
+  if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
+    this.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: e.featureTarget.properties.id
     });
-  }
+  } else {
+    // Stop everything
+    doubleClickZoom.disable(this);
+    this.stopExtendedInteractions(state);
 
-  // Shift-click on a selected feature
-  if (isFeatureSelected && isShiftClick) {
-    // Deselect it
-    this.deselect(featureId);
-    this.updateUIClasses({mouse: Constants.cursors.POINTER});
-    if (selectedFeatureIds.length === 1) {
-      doubleClickZoom.enable(this);
+    const isShiftClick = CommonSelectors.isShiftDown(e);
+    const selectedFeatureIds = this.getSelectedIds();
+    const featureId = e.featureTarget.properties.id;
+    const isFeatureSelected = this.isSelected(featureId);
+
+    // Click (without shift) on any selected feature but a point
+    if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== Constants.geojsonTypes.POINT) {
+      // Enter direct select mode
+      return this.changeMode(Constants.modes.DIRECT_SELECT, {
+        featureId
+      });
     }
-    // Shift-click on an unselected feature
-  } else if (!isFeatureSelected && isShiftClick) {
-    // Add it to the selection
-    this.select(featureId);
-    this.updateUIClasses({mouse: Constants.cursors.MOVE});
-    // Click (without shift) on an unselected feature
-  } else if (!isFeatureSelected && !isShiftClick) {
-    // Make it the only selected feature
-    selectedFeatureIds.forEach(id => this.doRender(id));
-    this.setSelected(featureId);
-    this.updateUIClasses({mouse: Constants.cursors.MOVE});
-  }
 
-  // No matter what, re-render the clicked feature
-  this.doRender(featureId);
+    // Shift-click on a selected feature
+    if (isFeatureSelected && isShiftClick) {
+      // Deselect it
+      this.deselect(featureId);
+      this.updateUIClasses({mouse: Constants.cursors.POINTER});
+      if (selectedFeatureIds.length === 1) {
+        doubleClickZoom.enable(this);
+      }
+      // Shift-click on an unselected feature
+    } else if (!isFeatureSelected && isShiftClick) {
+      // Add it to the selection
+      this.select(featureId);
+      this.updateUIClasses({mouse: Constants.cursors.MOVE});
+      // Click (without shift) on an unselected feature
+    } else if (!isFeatureSelected && !isShiftClick) {
+      // Make it the only selected feature
+      selectedFeatureIds.forEach(id => this.doRender(id));
+      this.setSelected(featureId);
+      this.updateUIClasses({mouse: Constants.cursors.MOVE});
+    }
+    // No matter what, re-render the clicked feature
+    this.doRender(featureId);
+
+    this.setSelected(e.featureTarget.properties.id);
+  }
 };
 
 SimpleSelect.onMouseDown = function (state, e) {
@@ -289,23 +295,27 @@ SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function (state, e) {
 };
 
 SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
+  const displayGeodesic = (geojson) => {
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
+    geodesicGeojson.forEach(display);
+  };
+
   geojson.properties.active = (this.isSelected(geojson.properties.id)) ?
     Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
-  display(geojson);
+  displayGeodesic(geojson);
   this.fireActionable();
   if (geojson.properties.active !== Constants.activeStates.ACTIVE ||
         geojson.geometry.type === Constants.geojsonTypes.POINT) return;
 
-
   const points = this.getFeature(geojson.properties.id).properties.points;
   if (points && points.length > 0) {
-    createSupplementaryThroughPoints(points, geojson.properties.id).forEach(display);
+    createSupplementaryThroughPoints(points, geojson.properties.id).forEach(displayGeodesic);
   } else {
     createSupplementaryPoints(geojson, {
       map: this.map,
       midpoints: true,
       selectedPaths: state.selectedCoordPaths
-    }).forEach(display);
+    }).forEach(displayGeodesic);
   }
 
   function createSupplementaryThroughPoints(points, featureId) {
