@@ -69,6 +69,7 @@
     "@mapbox/geojson-normalize": "^0.0.1",
     "@mapbox/point-geometry": "^0.1.0",
     "@turf/turf": "^6.5.0",
+    "@types/mapbox-gl": "^2.7.8",
     "arc": "^0.1.4",
     "geodesy-fn": "^1.0.1",
     "hat": "0.0.3",

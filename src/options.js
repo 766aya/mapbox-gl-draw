@@ -2,6 +2,7 @@ import xtend from 'xtend';
 import * as Constants from './constants';
 
 import styles from './lib/theme';
+import icons from "./icons";
 import modes from './modes/index';
 
 const defaultOptions = {
@@ -15,7 +16,8 @@ const defaultOptions = {
   styles,
   modes,
   controls: {},
-  userProperties: false
+  userProperties: false,
+  icons
 };
 
 const showControls = {

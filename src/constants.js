@@ -92,7 +92,8 @@ export const updateActions = {
 export const meta = {
   FEATURE: 'feature',
   MIDPOINT: 'midpoint',
-  VERTEX: 'vertex'
+  VERTEX: 'vertex',
+  ARROW: 'arrow'
 };
 
 export const activeStates = {

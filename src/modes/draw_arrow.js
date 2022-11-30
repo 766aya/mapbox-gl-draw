@@ -42,7 +42,9 @@ DrawArrow.onSetup = function (opts = {}) {
   } else {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
-      properties: {},
+      properties: {
+        featureType: "arrow"
+      },
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
         coordinates: []
@@ -69,7 +71,7 @@ DrawArrow.onSetup = function (opts = {}) {
 
 DrawArrow.toDisplayFeatures = function (state, geojson, display) {
   const displayGeodesic = (geojson) => {
-    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
+    const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx, drawing: true });
     geodesicGeojson.forEach(display);
   };
 

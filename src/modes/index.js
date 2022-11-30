@@ -18,7 +18,6 @@ export default {
   [Constants.modes.DRAW_POINT]: draw_point,
   [Constants.modes.DRAW_LINE_STRING]: draw_line_string,
   [Constants.modes.DRAW_POLYGON]: draw_polygon,
-  [Constants.modes.CIRCLE]: draw_polygon,
   [Constants.modes.DRAW_CIRCLE]: draw_circle,
   [Constants.modes.DRAW_SECTOR]: draw_sector,
   [Constants.modes.DRAW_RECTANGLE]: draw_rectangle,

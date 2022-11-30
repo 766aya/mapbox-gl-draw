@@ -9,6 +9,8 @@ export default function(ctx) {
   let controlContainer = null;
   let mapLoadedInterval = null;
 
+  const iconPrefix = "mapbox-gl-draw-";
+
   const setup = {
     onRemove() {
       // Stop connect attempt in the event that control is removed before map is loaded
@@ -16,6 +18,7 @@ export default function(ctx) {
       clearInterval(mapLoadedInterval);
 
       setup.removeLayers();
+      setup.removeIcons();
       ctx.store.restoreMapConfig();
       ctx.ui.removeButtons();
       ctx.events.removeEventListeners();
@@ -33,6 +36,7 @@ export default function(ctx) {
       ctx.map.off('load', setup.connect);
       clearInterval(mapLoadedInterval);
       setup.addLayers();
+      setup.addIcons();
       ctx.store.storeMapConfig();
       ctx.events.addEventListeners();
     },
@@ -122,6 +126,21 @@ export default function(ctx) {
       if (ctx.map.getSource(Constants.sources.HOT)) {
         ctx.map.removeSource(Constants.sources.HOT);
       }
+    },
+    // 添加icon
+    addIcons () {
+      Object.keys(ctx.options.icons).forEach((iconName) => {
+        const icon = ctx.options.icons[iconName];
+        ctx.map.loadImage(icon.url, (error, image) => {
+          if (!error && !ctx.map.hasImage(`${iconPrefix}${iconName}`)) ctx.map.addImage(`${iconPrefix}${iconName}`, image, icon.options);
+        });
+      });
+    },
+    // 移除icon
+    removeIcons () {
+      Object.keys(ctx.options.icons).forEach((iconName) => {
+        if (ctx.map.hasImage(`${iconPrefix}${iconName}`)) ctx.map.removeImage(`${iconPrefix}${iconName}`);
+      });
     }
   };
 

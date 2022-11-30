@@ -1,12 +1,14 @@
 import * as Constants from '../constants';
 import { getCircleCenter, getCircleRadius, isCircle } from './circleGeojson';
 import { getSectorCenter, getSectorRadius, isSector } from './sectorGeojson';
+import { isArrow } from "./arrowGeojson";
 import { isRectangle } from "./rectangleGeojson";
 import createGeodesicLine from './createGeodesicLine';
 import createGeodesicCircle from './createGeodesicCircle';
 import createGeodesicSector from './createGeodesicSector';
 import { midpoint, destinationPoint } from './geodesy';
 import createVertex from '../lib/create_vertex';
+import * as turf from "@turf/turf";
 
 const STEPS = 32;
 const HANDLE_BEARING = 45;
@@ -49,6 +51,9 @@ function createGeodesicGeojson(geojson, options) {
       return [geojson]; // pass point as is
     }
   } else if (type === Constants.geojsonTypes.LINE_STRING) {
+    if (isArrow(feature)) {
+      return processArrow();
+    }
     return processLine(); // calculate geodesic line
   } else if (type === Constants.geojsonTypes.POLYGON) {
     if (isCircle(feature)) {
@@ -227,6 +232,40 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
     return [geodesicGeojson];
+  }
+
+  function processArrow () {
+    const features = processLine();
+    // const isSelected = false;
+
+    // if (options.ctx.api.getSelectedIds().length !== 0) {
+    //   isSelected = options.ctx.api.getSelectedIds()[0] === properties.id;
+    // }
+
+    const points = [...feature.coordinates];
+
+    points.shift();
+
+    const vertices = points.map((point, index) => {
+      const p1 = turf.point(feature.coordinates[index]);
+      const p2 = turf.point(point);
+      const rotate = turf.bearing(p1, p2);
+
+      return {
+        type: Constants.geojsonTypes.FEATURE,
+        properties: {
+          meta: Constants.meta.ARROW,
+          "icon-rotate": rotate,
+          parent: properties.id,
+          "is-active": properties.active
+        },
+        geometry: {
+          type: Constants.geojsonTypes.POINT,
+          coordinates: point
+        }
+      };
+    });
+    return [...features, ...vertices];
   }
 }
 

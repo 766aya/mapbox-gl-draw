@@ -1,4 +1,27 @@
+/**
+ * @type { Array<import("@types/mapbox-gl").AnyLayer> }
+ */
 export default [
+  {
+    'id': 'gl-draw-point-arrow',
+    'type': 'symbol',
+    'filter': ['all', ['==', '$type', 'Point'], ["==", "meta", "arrow"]],
+    'paint': {
+      "icon-color": [
+        "case",
+        ["==", ["get", "is-active"], "true"], "#FBB03B",
+        "#3bb2d0"
+      ],
+    },
+    'layout': {
+      "icon-anchor": "center",
+      "icon-allow-overlap": true,
+      "icon-image": "mapbox-gl-draw-icon-arrow",
+      "icon-rotate": ["get", "icon-rotate"],
+      "text-allow-overlap": true,
+      "icon-size": 0.5
+    }
+  },
   {
     'id': 'gl-draw-polygon-fill-inactive',
     'type': 'fill',
