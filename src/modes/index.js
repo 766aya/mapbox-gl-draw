@@ -6,6 +6,7 @@ import draw_polygon from './draw_polygon';
 import draw_line_string from './draw_line_string';
 import draw_sector from './draw_sector';
 import draw_circle from './draw_circle';
+import draw_rectangle from "./draw_rectangle";
 import Static from "./static";
 import * as Constants from '../constants';
 
@@ -19,4 +20,5 @@ export default {
   [Constants.modes.CIRCLE]: draw_polygon,
   [Constants.modes.DRAW_CIRCLE]: draw_circle,
   [Constants.modes.DRAW_SECTOR]: draw_sector,
+  [Constants.modes.DRAW_RECTANGLE]: draw_rectangle,
 };

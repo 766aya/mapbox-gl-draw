@@ -1,11 +1,12 @@
 import * as Constants from '../constants';
 import { getCircleCenter, getCircleRadius, isCircle } from './circleGeojson';
+import { getSectorCenter, getSectorRadius, isSector } from './sectorGeojson';
+import { isRectangle } from "./rectangleGeojson";
 import createGeodesicLine from './createGeodesicLine';
 import createGeodesicCircle from './createGeodesicCircle';
 import createGeodesicSector from './createGeodesicSector';
 import { midpoint, destinationPoint } from './geodesy';
 import createVertex from '../lib/create_vertex';
-import { getSectorCenter, getSectorRadius, isSector } from './sectorGeojson';
 
 const STEPS = 32;
 const HANDLE_BEARING = 45;
@@ -40,7 +41,7 @@ function createGeodesicGeojson(geojson, options) {
   const featureId = properties.parent || properties.id;
   const feature = options.ctx.store.get(featureId);
   if (type === Constants.geojsonTypes.POINT) {
-    if (isCircle(feature) || isSector(feature)) {
+    if (isCircle(feature) || isSector(feature) || isRectangle(feature)) {
       return []; // hide circle points, they are displayed in processCircle instead
     } else if (properties.meta === Constants.meta.MIDPOINT) {
       return processMidpoint(); // calculate geodesic midpoint
@@ -54,6 +55,8 @@ function createGeodesicGeojson(geojson, options) {
       return processCircle(); // calculate geodesic circle
     } else if (isSector(feature)) {
       return processSector(); // calculate geodesic sector
+    } else if (isRectangle(feature)) {
+      return processRectangle(); // calculate geodesic rectangle
     } else {
       return processPolygon(); // calculate geodesic polygon
     }
@@ -165,6 +168,36 @@ function createGeodesicGeojson(geojson, options) {
       const handle1 = destinationPoint(center, radius, bearing1);
       const handle2 = destinationPoint(center, radius, bearing2);
       const points = [center, handle1, handle2];
+      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)));
+      return [geodesicGeojson, ...vertices];
+    } else {
+      return [geodesicGeojson];
+    }
+  }
+
+  function processRectangle () {
+    const featureGeojson = feature.toGeoJSON();
+    const p1 = featureGeojson.properties[Constants.properties.POINT1];
+    const p2 = featureGeojson.properties[Constants.properties.POINT2] || p1;
+
+    const geodesicGeojson = {
+      ...geojson,
+      geometry: {
+        ...geojson.geometry,
+        coordinates: [
+          [
+            p1,
+            [p1[0], p2[1]],
+            p2,
+            [p2[0], p1[1]],
+            p1
+          ]
+        ]
+      }
+    };
+
+    if (properties.active === Constants.activeStates.ACTIVE) {
+      const points = [p1, p2];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)));
       return [geodesicGeojson, ...vertices];
     } else {

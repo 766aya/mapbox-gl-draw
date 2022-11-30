@@ -20,8 +20,10 @@ export const properties = {
   BEARING: 'bearing',
   BEARING1: 'bearing1',
   BEARING2: 'bearing2',
-  UNITS: "units",
-  STEPS: 'steps'
+  UNITS: 'units',
+  STEPS: 'steps',
+  POINT1: 'p1',
+  POINT2: 'p2',
 };
 
 export const sources = {
@@ -72,6 +74,7 @@ export const modes = {
   STATIC: 'static',
   DRAW_CIRCLE: 'draw_circle',
   DRAW_SECTOR: 'draw_sector',
+  DRAW_RECTANGLE: 'draw_rectangle'
 };
 
 export const events = {

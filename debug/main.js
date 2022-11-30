@@ -7,7 +7,9 @@ const map = new window.mapboxgl.Map({
 });
 
 const draw = new window.MapboxDraw({
-
+  boxSelect: false,
+  displayControlsDefault: false,
+  userProperties: true
 });
 
 map.addControl(draw);
@@ -51,6 +53,10 @@ map.on("draw.update", ({ features }) => {
   console.log("修改成功", features);
 });
 
-map.on("draw.modechange", (e) => {
-  console.log("切换模式", e);
+map.on("draw.selectionchange", ({ features }) => {
+  console.log("选中要素切换", features);
+});
+
+map.on("draw.modechange", ({ mode }) => {
+  console.log("绘制模式切换", mode);
 });

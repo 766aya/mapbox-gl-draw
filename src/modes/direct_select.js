@@ -8,6 +8,7 @@ import { getCircleCenter, isCircle } from '../util/circleGeojson';
 import { distance, initialBearing } from '../util/geodesy';
 import createGeodesicGeojson from '../util/createGeodesicGeojson';
 import { getSectorCenter, isSector } from '../util/sectorGeojson';
+import { isRectangle } from '../util/rectangleGeojson';
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);
@@ -107,6 +108,14 @@ DirectSelect.dragVertex = function (state, e, delta) {
     } else {
       DirectSelect.dragFeature.call(this, state, e, delta);
     }
+  } else if (isRectangle(geojson)) {
+    const handle = [e.lngLat.lng, e.lngLat.lat];
+    if (state.selectedCoordPaths[0] === '0.0') {
+      state.feature.properties[Constants.properties.POINT1] = handle;
+    } else {
+      state.feature.properties[Constants.properties.POINT2] = handle;
+    }
+    state.feature.changed();
   } else {
     const selectedCoords = state.selectedCoordPaths.map(coord_path => state.feature.getCoordinate(coord_path));
     const selectedCoordPoints = selectedCoords.map(coords => ({
