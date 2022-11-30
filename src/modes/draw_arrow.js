@@ -1,14 +1,12 @@
-import * as CommonSelectors from '../lib/common_selectors';
-import isEventAtCoordinates from '../lib/is_event_at_coordinates';
-import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
-import createVertex from '../lib/create_vertex';
+import doubleClickZoom from '../lib/double_click_zoom';
+import DrawLineString from './draw_line_string';
+import create_vertex from '../lib/create_vertex';
 import createGeodesicGeojson from "../util/createGeodesicGeojson";
 
-const DrawLineString = {};
+const DrawArrow  = { ...DrawLineString };
 
-DrawLineString.onSetup = function(opts) {
-  opts = opts || {};
+DrawArrow.onSetup = function (opts = {}) {
   const featureId = opts.featureId;
 
   let line, currentVertexPosition;
@@ -69,71 +67,7 @@ DrawLineString.onSetup = function(opts) {
   };
 };
 
-DrawLineString.clickAnywhere = function(state, e) {
-  if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1]) ||
-      state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1])) {
-    return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
-  }
-  this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
-  if (state.direction === 'forward') {
-    state.currentVertexPosition++;
-    state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
-  } else {
-    state.line.addCoordinate(0, e.lngLat.lng, e.lngLat.lat);
-  }
-};
-
-DrawLineString.clickOnVertex = function(state) {
-  return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
-};
-
-DrawLineString.onMouseMove = function(state, e) {
-  state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
-  if (CommonSelectors.isVertex(e)) {
-    this.updateUIClasses({ mouse: Constants.cursors.POINTER });
-  }
-};
-
-DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
-  if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
-  this.clickAnywhere(state, e);
-};
-
-DrawLineString.onKeyUp = function(state, e) {
-  if (CommonSelectors.isEnterKey(e)) {
-    this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
-  } else if (CommonSelectors.isEscapeKey(e)) {
-    this.deleteFeature([state.line.id], { silent: true });
-    this.changeMode(Constants.modes.SIMPLE_SELECT);
-  }
-};
-
-DrawLineString.onStop = function(state) {
-  doubleClickZoom.enable(this);
-  this.activateUIButton();
-
-  // check to see if we've deleted this feature
-  if (this.getFeature(state.line.id) === undefined) return;
-
-  //remove last added coordinate
-  state.line.removeCoordinate(`${state.currentVertexPosition}`);
-  if (state.line.isValid()) {
-    this.map.fire(Constants.events.CREATE, {
-      features: [state.line.toGeoJSON()]
-    });
-  } else {
-    this.deleteFeature([state.line.id], { silent: true });
-    this.changeMode(Constants.modes.SIMPLE_SELECT, {}, { silent: true });
-  }
-};
-
-DrawLineString.onTrash = function(state) {
-  this.deleteFeature([state.line.id], { silent: true });
-  this.changeMode(Constants.modes.SIMPLE_SELECT);
-};
-
-DrawLineString.toDisplayFeatures = function(state, geojson, display) {
+DrawArrow.toDisplayFeatures = function (state, geojson, display) {
   const displayGeodesic = (geojson) => {
     const geodesicGeojson = createGeodesicGeojson(geojson, { ctx: this._ctx });
     geodesicGeojson.forEach(display);
@@ -146,7 +80,7 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
   if (geojson.geometry.coordinates.length < 2) return;
   geojson.properties.meta = Constants.meta.FEATURE;
 
-  displayGeodesic(createVertex(
+  displayGeodesic(create_vertex(
     state.line.id,
     geojson.geometry.coordinates[state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1],
     `${state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1}`,
@@ -156,4 +90,4 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
   displayGeodesic(geojson);
 };
 
-export default DrawLineString;
+export default DrawArrow;

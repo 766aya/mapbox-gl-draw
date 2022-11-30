@@ -41,6 +41,10 @@ document.getElementById("button-rectangle")?.addEventListener("click", () => {
   draw.changeMode("draw_rectangle");
 });
 
+document.getElementById("button-arrow").addEventListener("click", () => {
+  draw.changeMode("draw_arrow");
+});
+
 map.on("draw.create", ({ features }) => {
   console.log("创建成功", features);
 });

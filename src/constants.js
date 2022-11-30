@@ -45,12 +45,6 @@ export const types = {
   POINT: 'point',
   CIRCLE: 'circle',
   SECTOR: 'sector',
-  ARC: 'arc',
-  CURVE: 'curve',
-  GATHER_PLACE:'gather_place',
-  DOUBLE_ARROW:'double_arrow',
-  TAILED_SQUAD_COMBAT:'tailed_squad_combat',
-  LINE_ARROW:'line_arrow',
 };
 
 export const geojsonTypes = {
@@ -74,7 +68,8 @@ export const modes = {
   STATIC: 'static',
   DRAW_CIRCLE: 'draw_circle',
   DRAW_SECTOR: 'draw_sector',
-  DRAW_RECTANGLE: 'draw_rectangle'
+  DRAW_RECTANGLE: 'draw_rectangle',
+  DRAW_ARROW: 'draw_arrow'
 };
 
 export const events = {
