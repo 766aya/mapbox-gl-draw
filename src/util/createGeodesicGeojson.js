@@ -184,20 +184,20 @@ function createGeodesicGeojson(geojson, options) {
     const featureGeojson = feature.toGeoJSON();
     const p1 = featureGeojson.properties[Constants.properties.POINT1];
     const p2 = featureGeojson.properties[Constants.properties.POINT2] || p1;
+    const path = [
+      p1,
+      [p1[0], p2[1]],
+      p2,
+      [p2[0], p1[1]],
+      p1
+    ];
+    const geodesicCoordinates = [path].map(subCoordinates => createGeodesicLine(subCoordinates));
 
     const geodesicGeojson = {
       ...geojson,
       geometry: {
         ...geojson.geometry,
-        coordinates: [
-          [
-            p1,
-            [p1[0], p2[1]],
-            p2,
-            [p2[0], p1[1]],
-            p1
-          ]
-        ]
+        coordinates: geodesicCoordinates
       }
     };
 
@@ -236,14 +236,7 @@ function createGeodesicGeojson(geojson, options) {
 
   function processArrow () {
     const features = processLine();
-    // const isSelected = false;
-
-    // if (options.ctx.api.getSelectedIds().length !== 0) {
-    //   isSelected = options.ctx.api.getSelectedIds()[0] === properties.id;
-    // }
-
     const points = [...feature.coordinates];
-
     points.shift();
 
     const vertices = points.map((point, index) => {
