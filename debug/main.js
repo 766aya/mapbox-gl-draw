@@ -45,6 +45,10 @@ document.getElementById("button-arrow").addEventListener("click", () => {
   draw.changeMode("draw_arrow");
 });
 
+document.getElementById("button-lay-line").addEventListener("click", () => {
+  draw.changeMode("draw_lay_line");
+});
+
 map.on("draw.create", ({ features }) => {
   console.log("创建成功", features);
 });

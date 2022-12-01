@@ -3,6 +3,7 @@ import { getCircleCenter, getCircleRadius, isCircle } from './circleGeojson';
 import { getSectorCenter, getSectorRadius, isSector } from './sectorGeojson';
 import { isArrow } from "./arrowGeojson";
 import { isRectangle } from "./rectangleGeojson";
+import { isLayLine } from "./layLineGeojson";
 import createGeodesicLine from './createGeodesicLine';
 import createGeodesicCircle from './createGeodesicCircle';
 import createGeodesicSector from './createGeodesicSector';
@@ -56,14 +57,16 @@ function createGeodesicGeojson(geojson, options) {
     }
     return processLine(); // calculate geodesic line
   } else if (type === Constants.geojsonTypes.POLYGON) {
-    if (isCircle(feature)) {
-      return processCircle(); // calculate geodesic circle
+    if (isLayLine(feature)) {
+      return processLayLine(); // 方位线
     } else if (isSector(feature)) {
-      return processSector(); // calculate geodesic sector
+      return processSector(); // 扇形
+    } else if (isCircle(feature)) {
+      return processCircle(); // 圆
     } else if (isRectangle(feature)) {
-      return processRectangle(); // calculate geodesic rectangle
+      return processRectangle(); // 矩形
     } else {
-      return processPolygon(); // calculate geodesic polygon
+      return processPolygon(); // 多边形
     }
   } else /* istanbul ignore else */ if (type.indexOf(Constants.geojsonTypes.MULTI_PREFIX) === 0) {
     return processMultiGeometry();
@@ -259,6 +262,11 @@ function createGeodesicGeojson(geojson, options) {
       };
     });
     return [...features, ...vertices];
+  }
+
+  function processLayLine () {
+    const features = processCircle();
+    return [...features];
   }
 }
 

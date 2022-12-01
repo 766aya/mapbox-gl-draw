@@ -69,7 +69,8 @@ export const modes = {
   DRAW_CIRCLE: 'draw_circle',
   DRAW_SECTOR: 'draw_sector',
   DRAW_RECTANGLE: 'draw_rectangle',
-  DRAW_ARROW: 'draw_arrow'
+  DRAW_ARROW: 'draw_arrow',
+  DRAW_LAY_LINE: 'draw_lay_line'
 };
 
 export const events = {
