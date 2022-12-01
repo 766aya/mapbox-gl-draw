@@ -6,9 +6,9 @@ import createGeodesicGeojson from '../util/createGeodesicGeojson';
 import dragPan from '../util/dragPan';
 import doubleClickZoom from '../lib/double_click_zoom';
 
-const DrawCircleGeodesic = {};
+const DrawCircle = {};
 
-DrawCircleGeodesic.onSetup = function() {
+DrawCircle.onSetup = function() {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   dragPan.disable(this);
@@ -17,14 +17,14 @@ DrawCircleGeodesic.onSetup = function() {
   return {};
 };
 
-DrawCircleGeodesic.onMouseDown = DrawCircleGeodesic.onTouchStart = function(state, e) {
+DrawCircle.onMouseDown = DrawCircle.onTouchStart = function(state, e) {
   const center = [e.lngLat.lng, e.lngLat.lat];
   const circle = this.newFeature(createCircle(center, Number.EPSILON, { featureType: 'circle' }));
   this.addFeature(circle);
   state.circle = circle;
 };
 
-DrawCircleGeodesic.onDrag = DrawCircleGeodesic.onTouchMove = function(state, e) {
+DrawCircle.onDrag = DrawCircle.onTouchMove = function(state, e) {
   if (state.circle) {
     const geojson = state.circle.toGeoJSON();
     const center = getCircleCenter(geojson);
@@ -37,12 +37,12 @@ DrawCircleGeodesic.onDrag = DrawCircleGeodesic.onTouchMove = function(state, e) 
   }
 };
 
-DrawCircleGeodesic.onMouseUp = DrawCircleGeodesic.onTouchEnd = function(state) {
+DrawCircle.onMouseUp = DrawCircle.onTouchEnd = function(state) {
   this.map.fire(Constants.events.CREATE, { features: [state.circle.toGeoJSON()] });
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.circle.id] });
 };
 
-DrawCircleGeodesic.onKeyUp = function(state, e) {
+DrawCircle.onKeyUp = function(state, e) {
   if (CommonSelectors.isEscapeKey(e)) {
     if (state.circle) {
       this.deleteFeature([state.circle.id], { silent: true });
@@ -53,14 +53,14 @@ DrawCircleGeodesic.onKeyUp = function(state, e) {
   }
 };
 
-DrawCircleGeodesic.onStop = function() {
+DrawCircle.onStop = function() {
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   dragPan.enable(this);
   this.activateUIButton();
 };
 
-DrawCircleGeodesic.toDisplayFeatures = function(state, geojson, display) {
+DrawCircle.toDisplayFeatures = function(state, geojson, display) {
   if (state.circle) {
     const isActivePolygon = geojson.properties.id === state.circle.id;
     geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
@@ -74,4 +74,4 @@ DrawCircleGeodesic.toDisplayFeatures = function(state, geojson, display) {
   displayGeodesic(geojson);
 };
 
-export default DrawCircleGeodesic;
+export default DrawCircle;
