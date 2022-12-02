@@ -1,13 +1,30 @@
 import * as Constants from '../constants';
-import { getCircleCenter, getCircleRadius, isCircle } from './circleGeojson';
-import { getSectorCenter, getSectorRadius, isSector } from './sectorGeojson';
-import { isArrow } from "./arrowGeojson";
-import { isRectangle } from "./rectangleGeojson";
-import { isLayLine } from "./layLineGeojson";
+import {
+  getCircleCenter,
+  getCircleRadius,
+  isCircle
+} from './circleGeojson';
+import {
+  getSectorCenter,
+  getSectorRadius,
+  isSector
+} from './sectorGeojson';
+import {
+  isArrow
+} from "./arrowGeojson";
+import {
+  isRectangle
+} from "./rectangleGeojson";
+import {
+  isLayLine
+} from "./layLineGeojson";
 import createGeodesicLine from './createGeodesicLine';
 import createGeodesicCircle from './createGeodesicCircle';
 import createGeodesicSector from './createGeodesicSector';
-import { midpoint, destinationPoint } from './geodesy';
+import {
+  midpoint,
+  destinationPoint
+} from './geodesy';
 import createVertex from '../lib/create_vertex';
 import * as turf from "@turf/turf";
 
@@ -35,7 +52,10 @@ function getMidpointEndCoordPath(feature, path) {
 }
 
 function createGeodesicGeojson(geojson, options) {
-  options = { steps: STEPS, ...options };
+  options = {
+    steps: STEPS,
+    ...options
+  };
 
   const properties = geojson.properties;
   const type = geojson.geometry.type;
@@ -65,10 +85,9 @@ function createGeodesicGeojson(geojson, options) {
       return processCircle(); // 圆
     } else if (isRectangle(feature)) {
       return processRectangle(); // 矩形
-    } else {
-      return processPolygon(); // 多边形
     }
-  } else /* istanbul ignore else */ if (type.indexOf(Constants.geojsonTypes.MULTI_PREFIX) === 0) {
+    return processPolygon(); // 多边形
+  } else if (type.indexOf(Constants.geojsonTypes.MULTI_PREFIX) === 0) {
     return processMultiGeometry();
   }
 
@@ -183,7 +202,7 @@ function createGeodesicGeojson(geojson, options) {
     }
   }
 
-  function processRectangle () {
+  function processRectangle() {
     const featureGeojson = feature.toGeoJSON();
     const p1 = featureGeojson.properties[Constants.properties.POINT1];
     const p2 = featureGeojson.properties[Constants.properties.POINT2] || p1;
@@ -237,7 +256,7 @@ function createGeodesicGeojson(geojson, options) {
     return [geodesicGeojson];
   }
 
-  function processArrow () {
+  function processArrow() {
     const features = processLine();
     const points = [...feature.coordinates];
     points.shift();
@@ -264,10 +283,16 @@ function createGeodesicGeojson(geojson, options) {
     return [...features, ...vertices];
   }
 
-  function processLayLine () {
+  function processLayLine() {
     const features = processCircle();
     return [...features];
   }
+
+  // 自定义点标绘
+  function processCustomPoint() {
+
+  }
+
 }
 
 export default createGeodesicGeojson;

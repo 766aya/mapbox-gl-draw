@@ -2,7 +2,7 @@ import xtend from 'xtend';
 import * as Constants from './constants';
 
 import styles from './lib/theme';
-import icons from "./icons";
+import defaultIcons from "./icons";
 import modes from './modes/index';
 
 const defaultOptions = {
@@ -16,8 +16,7 @@ const defaultOptions = {
   styles,
   modes,
   controls: {},
-  userProperties: false,
-  icons
+  userProperties: false
 };
 
 const showControls = {
@@ -54,6 +53,10 @@ export default function(options = {}) {
   if (!options.controls) {
     withDefaults.controls = {};
   }
+  if (!options.icons) {
+    withDefaults.icons = {};
+  }
+  withDefaults.icons = xtend(defaultIcons, options.icons);
 
   if (options.displayControlsDefault === false) {
     withDefaults.controls = xtend(hideControls, options.controls);
