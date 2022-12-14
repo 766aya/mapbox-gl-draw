@@ -9,8 +9,8 @@ export default [
     'paint': {
       "icon-color": [
         "case",
-        ["==", ["get", "is-active"], "true"], "#FBB03B",
-        "#3bb2d0"
+        ["==", ["get", "is-active"], "true"], "#ff0000",
+        "#e600ff"
       ],
     },
     'layout': {
@@ -31,8 +31,8 @@ export default [
       ['!=', 'mode', 'static']
     ],
     'paint': {
-      'fill-color': '#3bb2d0',
-      'fill-outline-color': '#3bb2d0',
+      'fill-color': '#e600ff',
+      'fill-outline-color': '#e600ff',
       'fill-opacity': 0.1
     }
   },
@@ -41,8 +41,8 @@ export default [
     'type': 'fill',
     'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     'paint': {
-      'fill-color': '#fbb03b',
-      'fill-outline-color': '#fbb03b',
+      'fill-color': '#ff0000',
+      'fill-outline-color': '#ff0000',
       'fill-opacity': 0.1
     }
   },
@@ -54,7 +54,7 @@ export default [
       ['==', 'meta', 'midpoint']],
     'paint': {
       'circle-radius': 3,
-      'circle-color': '#fbb03b'
+      'circle-color': '#ff0000'
     }
   },
   {
@@ -70,7 +70,7 @@ export default [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3bb2d0',
+      'line-color': '#e600ff',
       'line-width': 2
     }
   },
@@ -83,7 +83,7 @@ export default [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#fbb03b',
+      'line-color': '#ff0000',
       'line-dasharray': [0.2, 2],
       'line-width': 2
     }
@@ -101,7 +101,7 @@ export default [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3bb2d0',
+      'line-color': '#e600ff',
       'line-width': 2
     }
   },
@@ -117,7 +117,7 @@ export default [
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#fbb03b',
+      'line-color': '#ff0000',
       'line-dasharray': [0.2, 2],
       'line-width': 2
     }
@@ -145,7 +145,7 @@ export default [
     ],
     'paint': {
       'circle-radius': 3,
-      'circle-color': '#fbb03b'
+      'circle-color': '#ff0000'
     }
   },
   {
@@ -174,7 +174,7 @@ export default [
     ],
     'paint': {
       'circle-radius': 3,
-      'circle-color': '#3bb2d0'
+      'circle-color': '#e600ff'
     }
   },
   {
@@ -199,7 +199,7 @@ export default [
       ['==', 'active', 'true']],
     'paint': {
       'circle-radius': 5,
-      'circle-color': '#fbb03b'
+      'circle-color': '#ff0000'
     }
   },
   {
