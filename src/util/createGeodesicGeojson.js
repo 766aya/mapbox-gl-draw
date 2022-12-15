@@ -23,7 +23,8 @@ import createGeodesicCircle from './createGeodesicCircle';
 import createGeodesicSector from './createGeodesicSector';
 import {
   midpoint,
-  destinationPoint
+  destinationPoint,
+  distance
 } from './geodesy';
 import createVertex from '../lib/create_vertex';
 import * as turf from "@turf/turf";
@@ -78,6 +79,7 @@ function createGeodesicGeojson(geojson, options) {
     return processLine(); // calculate geodesic line
   } else if (type === Constants.geojsonTypes.POLYGON) {
     if (isLayLine(feature)) {
+      console.log("方位线");
       return processLayLine(); // 方位线
     } else if (isSector(feature)) {
       return processSector(); // 扇形
@@ -285,7 +287,23 @@ function createGeodesicGeojson(geojson, options) {
 
   function processLayLine() {
     const features = processCircle();
-    return [...features];
+    const center = feature.properties[Constants.properties.CENTER];
+    const radius = feature.properties[Constants.properties.RADIUS];
+    const bearing = feature.properties[Constants.properties.BEARING];
+
+    if (bearing) {
+      const handle = destinationPoint(center, radius, bearing);
+      const dis = turf.distance(center, handle, { units: options.units || 'nauticalmiles' });
+      const layLine = turf.lineString([center, handle], {
+        active: properties.active,
+        parent: properties.id,
+        distance: dis,
+        radius
+      });
+      features.push(layLine);
+    }
+
+    return features;
   }
 
   // 自定义点标绘

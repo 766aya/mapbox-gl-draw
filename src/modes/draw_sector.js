@@ -31,7 +31,7 @@ DrawSector.onMouseDown = DrawSector.onTouchStart = function(state, e) {
     const center = state.sector.properties[Constants.properties.CENTER];
     const radius = distance(center, handle);
     const bearing1 = initialBearing(center, handle);
-    const { geometry, properties } = updateSector(center, radius, bearing1, bearing1 - Number.EPSILON, state.sector.toGeoJSON());
+    const { geometry, properties } = updateSector(center, radius, bearing1, bearing1 + 1, state.sector.toGeoJSON());
     state.sector.coordinates = geometry.coordinates;
     state.sector.properties = properties;
     state[Constants.properties.BEARING1] = bearing1;
