@@ -24,6 +24,16 @@ export default function(ctx, api) {
 
   api.modes = Constants.modes;
 
+  api.select = function (id) {
+    if (!id) {
+      ctx.store.setSelected([]);
+    } else {
+      ctx.store.setSelected([id]);
+    }
+    ctx.store._emitSelectionChange = true;
+    ctx.store.render();
+  };
+
   api.getFeatureIdsAt = function(point) {
     const features = featuresAt.click({ point }, null, ctx);
     return features.map(feature => feature.properties.id);

@@ -1,12 +1,12 @@
-import * as CommonSelectors from '../lib/common_selectors';
-import mouseEventPoint from '../lib/mouse_event_point';
-import createSupplementaryPoints from '../lib/create_supplementary_points';
-import StringSet from '../lib/string_set';
-import doubleClickZoom from '../lib/double_click_zoom';
-import moveFeatures from '../lib/move_features';
-import * as Constants from '../constants';
+import * as CommonSelectors from "../lib/common_selectors";
+import mouseEventPoint from "../lib/mouse_event_point";
+import createSupplementaryPoints from "../lib/create_supplementary_points";
+import StringSet from "../lib/string_set";
+import doubleClickZoom from "../lib/double_click_zoom";
+import moveFeatures from "../lib/move_features";
+import * as Constants from "../constants";
 import createVertex from "../lib/create_vertex";
-import createGeodesicGeojson from '../util/createGeodesicGeojson';
+import createGeodesicGeojson from "../util/createGeodesicGeojson";
 
 const SimpleSelect = {};
 
@@ -20,17 +20,23 @@ SimpleSelect.onSetup = function (opts) {
     canBoxSelect: false,
     dragMoving: false,
     canDragMove: false,
-    initiallySelectedFeatureIds: opts.featureIds || []
+    initiallySelectedFeatureIds: opts.featureIds || [],
   };
+  this.setSelected([]);
+  if (opts.disabled === false) {
+    this.setSelected(
+      state.initiallySelectedFeatureIds.filter(
+        id => this.getFeature(id) !== undefined
+      )
+    );
+    this.fireActionable();
+    this.setActionableState({
+      combineFeatures: true,
+      uncombineFeatures: true,
+      trash: true,
+    });
+  }
 
-  this.setSelected(state.initiallySelectedFeatureIds.filter(id => this.getFeature(id) !== undefined));
-  this.fireActionable();
-
-  this.setActionableState({
-    combineFeatures: true,
-    uncombineFeatures: true,
-    trash: true
-  });
 
   return state;
 };
@@ -38,24 +44,23 @@ SimpleSelect.onSetup = function (opts) {
 SimpleSelect.fireUpdate = function () {
   this.map.fire(Constants.events.UPDATE, {
     action: Constants.updateActions.MOVE,
-    features: this.getSelected().map(f => f.toGeoJSON())
+    features: this.getSelected().map(f => f.toGeoJSON()),
   });
 };
 
 SimpleSelect.fireActionable = function () {
   const selectedFeatures = this.getSelected();
 
-  const multiFeatures = selectedFeatures.filter(
-    feature => this.isInstanceOf('MultiFeature', feature)
+  const multiFeatures = selectedFeatures.filter(feature => this.isInstanceOf("MultiFeature", feature)
   );
 
   let combineFeatures = false;
 
   if (selectedFeatures.length > 1) {
     combineFeatures = true;
-    const featureType = selectedFeatures[0].type.replace('Multi', '');
+    const featureType = selectedFeatures[0].type.replace("Multi", "");
     selectedFeatures.forEach((feature) => {
-      if (feature.type.replace('Multi', '') !== featureType) {
+      if (feature.type.replace("Multi", "") !== featureType) {
         combineFeatures = false;
       }
     });
@@ -65,13 +70,16 @@ SimpleSelect.fireActionable = function () {
   const trash = selectedFeatures.length > 0;
 
   this.setActionableState({
-    combineFeatures, uncombineFeatures, trash
+    combineFeatures,
+    uncombineFeatures,
+    trash,
   });
 };
 
 SimpleSelect.getUniqueIds = function (allFeatures) {
   if (!allFeatures.length) return [];
-  const ids = allFeatures.map(s => s.properties.id)
+  const ids = allFeatures
+    .map(s => s.properties.id)
     .filter(id => id !== undefined)
     .reduce((memo, id) => {
       memo.add(id);
@@ -83,7 +91,8 @@ SimpleSelect.getUniqueIds = function (allFeatures) {
 
 SimpleSelect.stopExtendedInteractions = function (state) {
   if (state.boxSelectElement) {
-    if (state.boxSelectElement.parentNode) state.boxSelectElement.parentNode.removeChild(state.boxSelectElement);
+    if (state.boxSelectElement.parentNode)
+      state.boxSelectElement.parentNode.removeChild(state.boxSelectElement);
     state.boxSelectElement = null;
   }
 
@@ -122,7 +131,8 @@ SimpleSelect.onMouseOut = function (state) {
 SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
   if (CommonSelectors.noTarget(e)) return this.clickAnywhere(state, e); // also tap
-  if (CommonSelectors.isOfMetaType(Constants.meta.VERTEX)(e)) return this.clickOnVertex(state, e); //tap
+  if (CommonSelectors.isOfMetaType(Constants.meta.VERTEX)(e))
+    return this.clickOnVertex(state, e); //tap
   if (CommonSelectors.isFeature(e)) return this.clickOnFeature(state, e);
 };
 
@@ -141,9 +151,9 @@ SimpleSelect.clickOnVertex = function (state, e) {
   this.changeMode(Constants.modes.DIRECT_SELECT, {
     featureId: e.featureTarget.properties.parent,
     coordPath: e.featureTarget.properties.coord_path,
-    startPos: e.lngLat
+    startPos: e.lngLat,
   });
-  this.updateUIClasses({mouse: Constants.cursors.MOVE});
+  this.updateUIClasses({ mouse: Constants.cursors.MOVE });
 };
 
 SimpleSelect.startOnActiveFeature = function (state, e) {
@@ -162,84 +172,107 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
-  if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
-    this.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId: e.featureTarget.properties.id
-    });
-  } else {
-    // Stop everything
-    doubleClickZoom.disable(this);
-    this.stopExtendedInteractions(state);
 
-    const isShiftClick = CommonSelectors.isShiftDown(e);
-    const selectedFeatureIds = this.getSelectedIds();
-    const featureId = e.featureTarget.properties.id;
-    const isFeatureSelected = this.isSelected(featureId);
-
-    // Click (without shift) on any selected feature but a point
-    if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== Constants.geojsonTypes.POINT) {
-      // Enter direct select mode
-      return this.changeMode(Constants.modes.DIRECT_SELECT, {
-        featureId
+  const selectedChange = () => {
+    if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
+      this.changeMode(Constants.modes.DIRECT_SELECT, {
+        featureId: e.featureTarget.properties.id,
       });
-    }
+    } else {
+      // Stop everything
+      doubleClickZoom.disable(this);
+      this.stopExtendedInteractions(state);
 
-    // Shift-click on a selected feature
-    if (isFeatureSelected && isShiftClick) {
-      // Deselect it
-      this.deselect(featureId);
-      this.updateUIClasses({mouse: Constants.cursors.POINTER});
-      if (selectedFeatureIds.length === 1) {
-        doubleClickZoom.enable(this);
+      const isShiftClick = CommonSelectors.isShiftDown(e);
+      const selectedFeatureIds = this.getSelectedIds();
+      const featureId = e.featureTarget.properties.id;
+      const isFeatureSelected = this.isSelected(featureId);
+
+      // Click (without shift) on any selected feature but a point
+      if (
+        !isShiftClick &&
+        isFeatureSelected &&
+        this.getFeature(featureId).type !== Constants.geojsonTypes.POINT
+      ) {
+        // Enter direct select mode
+        return this.changeMode(Constants.modes.DIRECT_SELECT, {
+          featureId,
+        });
       }
-      // Shift-click on an unselected feature
-    } else if (!isFeatureSelected && isShiftClick) {
-      // Add it to the selection
-      this.select(featureId);
-      this.updateUIClasses({mouse: Constants.cursors.MOVE});
-      // Click (without shift) on an unselected feature
-    } else if (!isFeatureSelected && !isShiftClick) {
-      // Make it the only selected feature
-      selectedFeatureIds.forEach(id => this.doRender(id));
-      this.setSelected(featureId);
-      this.updateUIClasses({mouse: Constants.cursors.MOVE});
-    }
-    // No matter what, re-render the clicked feature
-    this.doRender(featureId);
 
-    this.setSelected(e.featureTarget.properties.id);
+      // Shift-click on a selected feature
+      if (isFeatureSelected && isShiftClick) {
+        // Deselect it
+        this.deselect(featureId);
+        this.updateUIClasses({ mouse: Constants.cursors.POINTER });
+        if (selectedFeatureIds.length === 1) {
+          doubleClickZoom.enable(this);
+        }
+        // Shift-click on an unselected feature
+      } else if (!isFeatureSelected && isShiftClick) {
+        // Add it to the selection
+        this.select(featureId);
+        this.updateUIClasses({ mouse: Constants.cursors.MOVE });
+        // Click (without shift) on an unselected feature
+      } else if (!isFeatureSelected && !isShiftClick) {
+        // Make it the only selected feature
+        selectedFeatureIds.forEach(id => this.doRender(id));
+        this.setSelected(featureId);
+        this.updateUIClasses({ mouse: Constants.cursors.MOVE });
+      }
+      // No matter what, re-render the clicked feature
+      this.doRender(featureId);
+
+      this.setSelected(e.featureTarget.properties.id);
+    }
+  };
+
+  if (e.featureTarget.properties.disabled === false) {
+    selectedChange();
+  } else {
+    e.target.fire("draw.clickOnFeature", {
+      feature: this.getFeature(e.featureTarget.properties.id).toGeoJSON(),
+      done: selectedChange
+    });
   }
 };
 
 SimpleSelect.onMouseDown = function (state, e) {
-  if (CommonSelectors.isActiveFeature(e)) return this.startOnActiveFeature(state, e);
-  if (this.drawConfig.boxSelect && CommonSelectors.isShiftMousedown(e)) return this.startBoxSelect(state, e);
+  if (CommonSelectors.isActiveFeature(e))
+    return this.startOnActiveFeature(state, e);
+  if (this.drawConfig.boxSelect && CommonSelectors.isShiftMousedown(e))
+    return this.startBoxSelect(state, e);
 };
 
 SimpleSelect.startBoxSelect = function (state, e) {
   this.stopExtendedInteractions(state);
   this.map.dragPan.disable();
   // Enable box select
-  state.boxSelectStartLocation = mouseEventPoint(e.originalEvent, this.map.getContainer());
+  state.boxSelectStartLocation = mouseEventPoint(
+    e.originalEvent,
+    this.map.getContainer()
+  );
   state.canBoxSelect = true;
 };
 
 SimpleSelect.onTouchStart = function (state, e) {
-  if (CommonSelectors.isActiveFeature(e)) return this.startOnActiveFeature(state, e);
+  if (CommonSelectors.isActiveFeature(e))
+    return this.startOnActiveFeature(state, e);
 };
 
 SimpleSelect.onDrag = function (state, e) {
   if (state.canDragMove) return this.dragMove(state, e);
-  if (this.drawConfig.boxSelect && state.canBoxSelect) return this.whileBoxSelect(state, e);
+  if (this.drawConfig.boxSelect && state.canBoxSelect)
+    return this.whileBoxSelect(state, e);
 };
 
 SimpleSelect.whileBoxSelect = function (state, e) {
   state.boxSelecting = true;
-  this.updateUIClasses({mouse: Constants.cursors.ADD});
+  this.updateUIClasses({ mouse: Constants.cursors.ADD });
 
   // Create the box node if it doesn't exist
   if (!state.boxSelectElement) {
-    state.boxSelectElement = document.createElement('div');
+    state.boxSelectElement = document.createElement("div");
     state.boxSelectElement.classList.add(Constants.classes.BOX_SELECT);
     this.map.getContainer().appendChild(state.boxSelectElement);
   }
@@ -264,7 +297,7 @@ SimpleSelect.dragMove = function (state, e) {
 
   const delta = {
     lng: e.lngLat.lng - state.dragMoveLocation.lng,
-    lat: e.lngLat.lat - state.dragMoveLocation.lat
+    lat: e.lngLat.lat - state.dragMoveLocation.lat,
   };
 
   moveFeatures(this.getSelected(), delta);
@@ -279,16 +312,17 @@ SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function (state, e) {
   } else if (state.boxSelecting) {
     const bbox = [
       state.boxSelectStartLocation,
-      mouseEventPoint(e.originalEvent, this.map.getContainer())
+      mouseEventPoint(e.originalEvent, this.map.getContainer()),
     ];
-    const featuresInBox = this.featuresAt(null, bbox, 'click');
-    const idsToSelect = this.getUniqueIds(featuresInBox)
-      .filter(id => !this.isSelected(id));
+    const featuresInBox = this.featuresAt(null, bbox, "click");
+    const idsToSelect = this.getUniqueIds(featuresInBox).filter(
+      id => !this.isSelected(id)
+    );
 
     if (idsToSelect.length) {
       this.select(idsToSelect);
       idsToSelect.forEach(id => this.doRender(id));
-      this.updateUIClasses({mouse: Constants.cursors.MOVE});
+      this.updateUIClasses({ mouse: Constants.cursors.MOVE });
     }
   }
   this.stopExtendedInteractions(state);
@@ -300,32 +334,39 @@ SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
     geodesicGeojson.forEach(display);
   };
 
-  geojson.properties.active = (this.isSelected(geojson.properties.id)) ?
-    Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+  geojson.properties.active = this.isSelected(geojson.properties.id) ?
+    Constants.activeStates.ACTIVE :
+    Constants.activeStates.INACTIVE;
   displayGeodesic(geojson);
   this.fireActionable();
-  if (geojson.properties.active !== Constants.activeStates.ACTIVE ||
-        geojson.geometry.type === Constants.geojsonTypes.POINT) return;
+  if (
+    geojson.properties.active !== Constants.activeStates.ACTIVE ||
+    geojson.geometry.type === Constants.geojsonTypes.POINT
+  )
+    return;
 
   const points = this.getFeature(geojson.properties.id).properties.points;
   if (points && points.length > 0) {
-    createSupplementaryThroughPoints(points, geojson.properties.id).forEach(displayGeodesic);
+    createSupplementaryThroughPoints(points, geojson.properties.id).forEach(
+      displayGeodesic
+    );
   } else {
     createSupplementaryPoints(geojson, {
       map: this.map,
       midpoints: true,
-      selectedPaths: state.selectedCoordPaths
+      selectedPaths: state.selectedCoordPaths,
     }).forEach(displayGeodesic);
   }
 
   function createSupplementaryThroughPoints(points, featureId) {
-    const  supplementaryPoints = [];
+    const supplementaryPoints = [];
     for (let index = 0; index < points.length; index++) {
-      supplementaryPoints.push(createVertex(featureId, points[index], `0.${index}`, false));
+      supplementaryPoints.push(
+        createVertex(featureId, points[index], `0.${index}`, false)
+      );
     }
     return supplementaryPoints;
   }
-
 };
 
 SimpleSelect.onTrash = function () {
@@ -338,16 +379,17 @@ SimpleSelect.onCombineFeatures = function () {
 
   if (selectedFeatures.length === 0 || selectedFeatures.length < 2) return;
 
-  const coordinates = [], featuresCombined = [];
-  const featureType = selectedFeatures[0].type.replace('Multi', '');
+  const coordinates = [],
+    featuresCombined = [];
+  const featureType = selectedFeatures[0].type.replace("Multi", "");
 
   for (let i = 0; i < selectedFeatures.length; i++) {
     const feature = selectedFeatures[i];
 
-    if (feature.type.replace('Multi', '') !== featureType) {
+    if (feature.type.replace("Multi", "") !== featureType) {
       return;
     }
-    if (feature.type.includes('Multi')) {
+    if (feature.type.includes("Multi")) {
       feature.getCoordinates().forEach((subcoords) => {
         coordinates.push(subcoords);
       });
@@ -364,17 +406,17 @@ SimpleSelect.onCombineFeatures = function () {
       properties: featuresCombined[0].properties,
       geometry: {
         type: `Multi${featureType}`,
-        coordinates
-      }
+        coordinates,
+      },
     });
 
     this.addFeature(multiFeature);
-    this.deleteFeature(this.getSelectedIds(), {silent: true});
+    this.deleteFeature(this.getSelectedIds(), { silent: true });
     this.setSelected([multiFeature.id]);
 
     this.map.fire(Constants.events.COMBINE_FEATURES, {
       createdFeatures: [multiFeature.toGeoJSON()],
-      deletedFeatures: featuresCombined
+      deletedFeatures: featuresCombined,
     });
   }
   this.fireActionable();
@@ -390,14 +432,14 @@ SimpleSelect.onUncombineFeatures = function () {
   for (let i = 0; i < selectedFeatures.length; i++) {
     const feature = selectedFeatures[i];
 
-    if (this.isInstanceOf('MultiFeature', feature)) {
+    if (this.isInstanceOf("MultiFeature", feature)) {
       feature.getFeatures().forEach((subFeature) => {
         this.addFeature(subFeature);
         subFeature.properties = feature.properties;
         createdFeatures.push(subFeature.toGeoJSON());
         this.select([subFeature.id]);
       });
-      this.deleteFeature(feature.id, {silent: true});
+      this.deleteFeature(feature.id, { silent: true });
       featuresUncombined.push(feature.toGeoJSON());
     }
   }
@@ -405,7 +447,7 @@ SimpleSelect.onUncombineFeatures = function () {
   if (createdFeatures.length > 1) {
     this.map.fire(Constants.events.UNCOMBINE_FEATURES, {
       createdFeatures,
-      deletedFeatures: featuresUncombined
+      deletedFeatures: featuresUncombined,
     });
   }
   this.fireActionable();

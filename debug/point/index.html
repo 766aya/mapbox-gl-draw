@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EhhDraw-Demo Point</title>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css' rel='stylesheet' />
+  <link rel="stylesheet" href="/dist/mapbox-gl-draw.css">
+  <link rel="stylesheet" href="./main.css">
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js'></script>
+  <script src="/dist/mapbox-gl-draw-unminified.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div class="controller-layout">
+      <button id="direct-draw-point-button">通过点击地图创建点</button>
+
+      <form class="form" id="form" action="javascript:;">
+        <div class="form-item">
+          <div class="form-item__label">点默认颜色：</div>
+          <div class="form-item__content">
+            <input type="color" id="circle-color" value="#e600ff">
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="form-item__label">点选中颜色：</div>
+          <div class="form-item__content">
+            <input type="color" id="circle-active-color" value="#FF0000">
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="form-item__label">名称：</div>
+          <div class="form-item__content">
+            <input type="input" id="name" value="" placeholder="请输入名称" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="form-item__label">字号：</div>
+          <div class="form-item__content">
+            <input type="input" id="text-size" value="14" placeholder="请输入字号" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="form-item__label">文字颜色：</div>
+          <div class="form-item__content">
+            <input type="color" id="text-color" value="#FF0000" autocomplete="off">
+          </div>
+        </div>
+      </form>
+
+      <div class="button-layout">
+        <button id="save-button">保存</button>
+        <button id="cancel-button">取消</button>
+      </div>
+    </div>
+    <div class="feature-list-layout"></div>
+    <div id="map"></div>
+  </div>
+  <script src="./main.js"></script>
+</body>
+
+</html>
