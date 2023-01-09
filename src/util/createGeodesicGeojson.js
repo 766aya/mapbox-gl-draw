@@ -79,7 +79,6 @@ function createGeodesicGeojson(geojson, options) {
     return processLine(); // calculate geodesic line
   } else if (type === Constants.geojsonTypes.POLYGON) {
     if (isLayLine(feature)) {
-      console.log("方位线");
       return processLayLine(); // 方位线
     } else if (isSector(feature)) {
       return processSector(); // 扇形
@@ -113,9 +112,10 @@ function createGeodesicGeojson(geojson, options) {
     const geodesicGeojson = {
       ...geojson,
       properties: {
+        ...feature.properties,
         ...properties,
         lng: midCoord[0],
-        lat: midCoord[1]
+        lat: midCoord[1],
       },
       geometry: {
         ...geojson.geometry,
@@ -167,7 +167,7 @@ function createGeodesicGeojson(geojson, options) {
     if (properties.active === Constants.activeStates.ACTIVE) {
       const handle = destinationPoint(center, radius, handleBearing);
       const points = [center, handle];
-      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)));
+      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`), geojson.properties || {}));
       return [geodesicGeojson, ...vertices];
     } else {
       return [geodesicGeojson];
@@ -197,7 +197,7 @@ function createGeodesicGeojson(geojson, options) {
       const handle1 = destinationPoint(center, radius, bearing1);
       const handle2 = destinationPoint(center, radius, bearing2);
       const points = [center, handle1, handle2];
-      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)));
+      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
       return [geodesicGeojson, ...vertices];
     } else {
       return [geodesicGeojson];
@@ -227,7 +227,7 @@ function createGeodesicGeojson(geojson, options) {
 
     if (properties.active === Constants.activeStates.ACTIVE) {
       const points = [p1, p2];
-      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)));
+      const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
       return [geodesicGeojson, ...vertices];
     } else {
       return [geodesicGeojson];

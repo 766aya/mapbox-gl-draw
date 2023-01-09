@@ -284,17 +284,11 @@ DirectSelect.onDrag = function (state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-DirectSelect.onClick = function (state, e) {
+DirectSelect.onTap = DirectSelect.onClick = function (state, e) {
   if (noTarget(e)) return this.clickNoTarget(state, e);
   if (isActiveFeature(e)) return this.clickActiveFeature(state, e);
   if (isInactiveFeature(e)) return this.clickInactive(state, e);
   this.stopDragging(state);
-};
-
-DirectSelect.onTap = function (state, e) {
-  if (noTarget(e)) return this.clickNoTarget(state, e);
-  if (isActiveFeature(e)) return this.clickActiveFeature(state, e);
-  if (isInactiveFeature(e)) return this.clickInactive(state, e);
 };
 
 DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {

@@ -362,7 +362,7 @@ SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
     const supplementaryPoints = [];
     for (let index = 0; index < points.length; index++) {
       supplementaryPoints.push(
-        createVertex(featureId, points[index], `0.${index}`, false)
+        createVertex(featureId, points[index], `0.${index}`, false, geojson.properties || {})
       );
     }
     return supplementaryPoints;

@@ -5,6 +5,7 @@ import createGeodesicGeojson from "../util/createGeodesicGeojson";
 const DrawPoint = {};
 
 DrawPoint.onSetup = function (properties = {}) {
+
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties,

@@ -7,8 +7,7 @@ import createGeodesicGeojson from "../util/createGeodesicGeojson";
 
 const DrawLineString = {};
 
-DrawLineString.onSetup = function(opts) {
-  opts = opts || {};
+DrawLineString.onSetup = function(opts = {}) {
   const featureId = opts.featureId;
 
   let line, currentVertexPosition;
@@ -44,7 +43,7 @@ DrawLineString.onSetup = function(opts) {
   } else {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
-      properties: {},
+      properties: opts,
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
         coordinates: []
@@ -150,7 +149,8 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
     state.line.id,
     geojson.geometry.coordinates[state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1],
     `${state.direction === 'forward' ? geojson.geometry.coordinates.length - 2 : 1}`,
-    false
+    false,
+    geojson.properties || {}
   ));
 
   displayGeodesic(geojson);

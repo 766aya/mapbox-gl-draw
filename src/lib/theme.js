@@ -53,8 +53,8 @@ export default [
     type: "circle",
     filter: ["all", ["==", "$type", "Point"], ["==", "meta", "midpoint"]],
     paint: {
-      "circle-radius": 3,
-      "circle-color": "#ff0000",
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 2], 3],
+      "circle-color": ["coalesce", ["get", "line-active-color"], "#FF0000"],
     },
   },
   {
@@ -89,6 +89,7 @@ export default [
       "line-width": 2,
     },
   },
+  // 线非选中态
   {
     id: "gl-draw-line-inactive",
     type: "line",
@@ -103,10 +104,11 @@ export default [
       "line-join": "round",
     },
     paint: {
-      "line-color": "#e600ff",
-      "line-width": 2,
+      "line-color": ["coalesce", ["get", "line-color"], "#e600ff"],
+      "line-width": ["coalesce", ["get", "line-width"], 2],
     },
   },
+  // 线要素选中态
   {
     id: "gl-draw-line-active",
     type: "line",
@@ -116,11 +118,12 @@ export default [
       "line-join": "round",
     },
     paint: {
-      "line-color": "#ff0000",
+      "line-color": ["coalesce", ["get", "line-active-color"], "#ff0000"],
       "line-dasharray": [0.2, 2],
-      "line-width": 2,
+      "line-width": ["coalesce", ["get", "line-width"], 2]
     },
   },
+  // 面和线要素 顶点 非选中状态描边
   {
     id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
     type: "circle",
@@ -131,10 +134,11 @@ export default [
       ["!=", "mode", "static"],
     ],
     paint: {
-      "circle-radius": 5,
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],
       "circle-color": "#fff",
     },
   },
+  // 面和线要素 顶点 - 非选中状态
   {
     id: "gl-draw-polygon-and-line-vertex-inactive",
     type: "circle",
@@ -145,10 +149,11 @@ export default [
       ["!=", "mode", "static"],
     ],
     paint: {
-      "circle-radius": 3,
-      "circle-color": "#ff0000",
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 1], 3],
+      "circle-color": ["coalesce", ["get", "line-active-color"], "#ff0000"],
     },
   },
+  // 点标绘非选中态 底层模拟描边
   {
     id: "gl-draw-point-point-stroke-inactive",
     type: "circle",
@@ -165,6 +170,7 @@ export default [
       "circle-color": "#fff",
     },
   },
+  // 点标绘非选中态 圆
   {
     id: "gl-draw-point-inactive",
     type: "circle",
@@ -197,13 +203,20 @@ export default [
       "text-line-height": 1,
       "text-size": ["coalesce", ["get", "text-size"], 14],
       "text-justify": "center",
-      "text-offset": [0.6, 0],
+      "text-offset": ["match", ["get", "text-anchor"],
+        "left",  ["literal", [0.6, 0]],
+        "right", ["literal", [-0.6, 0]],
+        "top", ["literal", [0, 0.6]],
+        "bottom", ["literal", [0, -0.6]],
+        ["literal", [0.6, 0]]
+      ],
     },
     paint: {
       "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
     },
     minzoom: 10,
   },
+  // 点要素以及顶点被选中时 底层模拟描边
   {
     id: "gl-draw-point-stroke-active",
     type: "circle",
@@ -214,10 +227,11 @@ export default [
       ["!=", "meta", "midpoint"],
     ],
     paint: {
-      "circle-radius": 7,
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 5], 7],
       "circle-color": "#fff",
     },
   },
+  // 点要素以及顶点被选中时 非中心分割点
   {
     id: "gl-draw-point-active",
     type: "circle",
@@ -228,10 +242,17 @@ export default [
       ["==", "active", "true"],
     ],
     paint: {
-      "circle-radius": 5,
-      "circle-color": ["coalesce", ["get", "circle-active-color"], "#FF0000"],
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],
+      "circle-color": ["coalesce",
+        ["get", "line-active-color"],
+        ["get", "circle-active-color"],
+        "#FF0000"
+      ],
     },
   },
+  /**
+   * 以下是静态模式下各种标绘图层显示样式
+   */
   {
     id: "gl-draw-polygon-fill-static",
     type: "fill",

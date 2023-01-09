@@ -19,7 +19,81 @@ map.addControl(draw);
 class FeatureList {
   el;
 
-  featureList = [];
+  featureList = [
+    {
+      "id": "26f3bf1c751f8ae2d8b726ad5f4f0414",
+      "type": "Feature",
+      "properties": {
+        "circle-color": "#e600ff",
+        "circle-active-color": "#ff0000",
+        "name": "测试",
+        "text-size": 14,
+        "text-color": "#ff0000",
+        "text-anchor": "top"
+      },
+      "geometry": {
+        "coordinates": [
+          122.0415539672855,
+          30.08788305661389
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "id": "9aae4f38450cdf3fa39629231db5fd03",
+      "type": "Feature",
+      "properties": {
+        "circle-color": "#0008ff",
+        "circle-active-color": "#800000",
+        "name": "点1",
+        "text-size": 14,
+        "text-color": "#ff0000",
+      },
+      "geometry": {
+        "coordinates": [
+          122.05219697265488,
+          30.088180118741676
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "id": "23941c13e966e2f28bf4bcc1dd7c028b",
+      "type": "Feature",
+      "properties": {
+        "circle-color": "#f56e00",
+        "circle-active-color": "#00b365",
+        "name": "点2",
+        "text-size": 20,
+        "text-color": "#ff0000",
+      },
+      "geometry": {
+        "coordinates": [
+          122.05990479817433,
+          30.088601631292576
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "id": "d36cba79ec12c93733609621c9141003",
+      "type": "Feature",
+      "properties": {
+        "circle-color": "#99ff00",
+        "circle-active-color": "#00b365",
+        "name": "点3",
+        "text-size": 20,
+        "text-color": "#0033ff",
+      },
+      "geometry": {
+        "coordinates": [
+          122.06868202817833,
+          30.088499936369658
+        ],
+        "type": "Point"
+      }
+    }
+  ];
 
   selectedFeature = null;
 
@@ -31,7 +105,11 @@ class FeatureList {
     } else {
       throw new TypeError("param el is not String or HTMLElement");
     }
-    this.featureList = featureList;
+    this.featureList = this.featureList.concat(featureList);
+    for (const feature of this.featureList) {
+      draw.add(feature);
+      this.add(feature);
+    }
   }
 
   _createInfoItem(label, value) {
@@ -118,19 +196,21 @@ class FeatureList {
   }
 
   setSelectedFeature(feature) {
+    if (!feature) return;
     this.selectedFeature = feature;
     const circleColor = document.getElementById("circle-color");
     const circleActiveColor = document.getElementById("circle-active-color");
     const name = document.getElementById("name");
     const textSize = document.getElementById("text-size");
     const textColor = document.getElementById("text-color");
+    const textAnchor = document.getElementById("text-anchor");
 
     circleColor.value = feature.properties["circle-color"];
     circleActiveColor.value = feature.properties["circle-active-color"];
     name.value = feature.properties["name"];
     textSize.value = feature.properties["text-size"];
     textColor.value = feature.properties["text-color"];
-
+    textAnchor.value = feature.properties["text-anchor"];
   }
 }
 
@@ -149,12 +229,14 @@ directDrawPointButton.addEventListener("click", () => {
   const name = document.getElementById("name");
   const textSize = document.getElementById("text-size");
   const textColor = document.getElementById("text-color");
+  const textAnchor = document.getElementById("text-anchor");
 
   options["circle-color"] = circleColor.value;
   options["circle-active-color"] = circleActiveColor.value;
   options["name"] = name.value;
   options["text-size"] = Number(textSize.value);
   options["text-color"] = textColor.value;
+  options["text-anchor"] = textAnchor.value;
 
   draw.changeMode("draw_point", options);
 });
@@ -166,15 +248,21 @@ document.getElementById("save-button").addEventListener("click", () => {
   const name = document.getElementById("name");
   const textSize = document.getElementById("text-size");
   const textColor = document.getElementById("text-color");
+  const textAnchor = document.getElementById("text-anchor");
 
-  draw.setFeatureProperty(featureList.selectedFeature.id, "circle-color", circleColor.value);
-  draw.setFeatureProperty(featureList.selectedFeature.id, "circle-active-color", circleActiveColor.value);
-  draw.setFeatureProperty(featureList.selectedFeature.id, "name", name.value);
-  draw.setFeatureProperty(featureList.selectedFeature.id, "text-size", Number(textSize.value));
-  draw.setFeatureProperty(featureList.selectedFeature.id, "text-color", textColor.value);
+  featureList.selectedFeature.properties["circle-color"] = circleColor.value;
+  featureList.selectedFeature.properties["circle-active-color"] = circleActiveColor.value;
+  featureList.selectedFeature.properties["name"] = name.value;
+  featureList.selectedFeature.properties["text-size"] = Number(textSize.value);
+  featureList.selectedFeature.properties["text-color"] = textColor.value;
+  featureList.selectedFeature.properties["text-anchor"] = textAnchor.value;
+
+  Object.keys(featureList.selectedFeature.properties).forEach((key) => {
+    draw.setFeatureProperty(featureList.selectedFeature.id, key, featureList.selectedFeature.properties[key]);
+  });
   draw.select(null);
 
-  featureList.update(featureList.featureList);
+  featureList.update(featureList.selectedFeature);
 });
 
 document.getElementById("cancel-button").addEventListener("click", () => {
@@ -197,8 +285,4 @@ map.on("draw.selectionchange", ({ features }) => {
     controllerButtonLayout.style.display = "none";
     featureList.setSelectedFeature(null);
   }
-});
-
-map.on("draw.clickOnFeature", ({ feature }) => {
-  console.log("要素被点击", feature);
 });

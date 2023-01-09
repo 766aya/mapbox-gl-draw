@@ -109,12 +109,12 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
     return;
   }
   geojson.properties.meta = Constants.meta.FEATURE;
-  displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][0], '0.0', false));
+  displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][0], '0.0', false, geojson.properties || {}));
   if (coordinateCount > 3) {
     // Add a start position marker to the map, clicking on this will finish the feature
     // This should only be shown when we're in a valid spot
     const endPos = geojson.geometry.coordinates[0].length - 3;
-    displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false));
+    displayGeodesic(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false, geojson.properties || {}));
   }
   if (coordinateCount <= 4) {
     // If we've only drawn two positions (plus the closer),
