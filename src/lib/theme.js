@@ -227,7 +227,7 @@ export default [
       ["!=", "meta", "midpoint"],
     ],
     paint: {
-      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 5], 7],
+      "circle-radius": ["case", ["has", "line-width"], ["+", ["get", "line-width"], 5], 7],
       "circle-color": "#fff",
     },
   },
