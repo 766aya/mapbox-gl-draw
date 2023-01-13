@@ -77,8 +77,11 @@ DirectSelect.onFeature = function (state, e) {
 };
 
 DirectSelect.dragFeature = function (state, e, delta) {
-  moveFeatures(this.getSelected(), delta);
-  state.dragMoveLocation = e.lngLat;
+  console.log("dragFeature", state);
+  if (state.canFeatureMove) {
+    moveFeatures(this.getSelected(), delta);
+    state.dragMoveLocation = e.lngLat;
+  }
 };
 
 DirectSelect.dragVertex = function (state, e, delta) {
@@ -144,12 +147,14 @@ DirectSelect.clickInactive = function (state, e) {
   if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
     // switch to direct_select mode for polygon/line features
     this.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId: e.featureTarget.properties.id
+      featureId: e.featureTarget.properties.id,
+      canFeatureMove: state.canFeatureMove
     });
   } else {
     // switch to simple_select mode for point features
     this.changeMode(Constants.modes.SIMPLE_SELECT, {
-      featureIds: [e.featureTarget.properties.id]
+      featureIds: [e.featureTarget.properties.id],
+      canFeatureMove: state.canFeatureMove
     });
   }
 };
@@ -165,6 +170,7 @@ DirectSelect.clickActiveFeature = function (state) {
 DirectSelect.onSetup = function (opts) {
   const featureId = opts.featureId;
   const feature = this.getFeature(featureId);
+  console.log("DirectSelect.onSetup", opts);
 
   if (!feature) {
     throw new Error('You must provide a featureId to enter direct_select mode');
@@ -180,6 +186,7 @@ DirectSelect.onSetup = function (opts) {
     dragMoveLocation: opts.startPos || null,
     dragMoving: false,
     canDragMove: false,
+    canFeatureMove: opts.canFeatureMove !== false,
     selectedCoordPaths: opts.coordPath ? [opts.coordPath] : []
   };
 

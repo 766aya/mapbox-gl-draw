@@ -20,9 +20,12 @@ SimpleSelect.onSetup = function (opts) {
     canBoxSelect: false,
     dragMoving: false,
     canDragMove: false,
+    canFeatureMove: opts.canFeatureMove !== false,
     initiallySelectedFeatureIds: opts.featureIds || [],
   };
-  this.setSelected([]);
+
+  console.log("SimpleSelect.onSetup", state);
+
   if (opts.disabled === false) {
     this.setSelected(
       state.initiallySelectedFeatureIds.filter(
@@ -35,8 +38,15 @@ SimpleSelect.onSetup = function (opts) {
       uncombineFeatures: true,
       trash: true,
     });
+  } else {
+    this.setSelected([]);
+    this.fireActionable();
+    this.setActionableState({
+      combineFeatures: true,
+      uncombineFeatures: true,
+      trash: true,
+    });
   }
-
 
   return state;
 };
@@ -261,7 +271,7 @@ SimpleSelect.onTouchStart = function (state, e) {
 };
 
 SimpleSelect.onDrag = function (state, e) {
-  if (state.canDragMove) return this.dragMove(state, e);
+  if (state.canDragMove && state.canFeatureMove) return this.dragMove(state, e);
   if (this.drawConfig.boxSelect && state.canBoxSelect)
     return this.whileBoxSelect(state, e);
 };
