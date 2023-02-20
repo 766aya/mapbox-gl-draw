@@ -117,7 +117,14 @@ class DrawLineString {
     const updateButton = document.createElement("button");
     updateButton.innerText = "编辑";
     updateButton.addEventListener("click", () => {
-      this.draw.select(feature.id);
+      this.draw.changeMode("direct_select", {
+        featureId: feature.id
+      });
+      for (const property of Object.keys(feature.properties)) {
+        if (this.properties[property]) {
+          this.properties[property].value = feature.properties[property];
+        }
+      }
     });
     const deleteButton = document.createElement("button");
     deleteButton.innerText = "删除";
@@ -144,7 +151,6 @@ class DrawLineString {
    * @param { GeoJSON.Feature } feature
    */
   update (feature) {
-    console.log(feature);
     feature.properties = Object.assign(feature.properties, this.buildProperties());
     const propertiesKeys = Object.keys(feature.properties);
     for (const property of propertiesKeys) {
@@ -172,17 +178,44 @@ class DrawLineString {
     }
   }
 
+  form = document.getElementById("form");
+
+  lineColor = this.form.querySelector("input#line-color");
+  lineWidth = this.form.querySelector("input#line-width");
+  lineType = this.form.querySelector("select#line-type");
+  lineActiveColor = this.form.querySelector("input#line-active-color");
+  lineActiveType = this.form.querySelector("select#line-active-type");
+  name = this.form.querySelector("input#name");
+  textSize = this.form.querySelector("input#text-size");
+
+  properties = {
+    "line-color": this.lineColor,
+    "line-width": this.lineWidth,
+    "line-type": this.lineType,
+    "line-active-color": this.lineActiveColor,
+    "line-active-type": this.lineActiveType,
+    "name": this.name,
+    "text-size": this.textSize,
+  };
+
   buildProperties () {
     const result = {};
-    const form = document.getElementById("form");
 
-    const lineColor = form.querySelector("input#line-color");
-    const lineWidth = form.querySelector("input#line-width");
-    const lineActiveColor = form.querySelector("input#line-active-color");
+    this.lineColor = this.form.querySelector("input#line-color");
+    this.lineWidth = this.form.querySelector("input#line-width");
+    this.lineType = this.form.querySelector("select#line-type");
+    this.lineActiveColor = this.form.querySelector("input#line-active-color");
+    this.lineActiveType = this.form.querySelector("select#line-active-type");
+    this.name = this.form.querySelector("input#name");
+    this.textSize = this.form.querySelector("input#text-size");
 
-    result["line-color"] = lineColor.value;
-    result["line-width"] = Number(lineWidth.value);
-    result["line-active-color"] = lineActiveColor.value;
+    result["line-color"] = this.lineColor.value;
+    result["line-width"] = Number(this.lineWidth.value);
+    result["line-type"] = this.lineType.value;
+    result["line-active-color"] = this.lineActiveColor.value;
+    result["line-active-type"] = this.lineActiveType.value;
+    result["name"] = this.name.value;
+    result["text-size"] = this.textSize.value;
 
     return result;
   }

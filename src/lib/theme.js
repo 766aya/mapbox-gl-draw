@@ -89,15 +89,16 @@ export default [
       "line-width": 2,
     },
   },
-  // 线非选中态
+  // 线非选中态 实现
   {
-    id: "gl-draw-line-inactive",
+    id: "gl-draw-line-inactive-solid",
     type: "line",
     filter: [
       "all",
       ["==", "active", "false"],
       ["==", "$type", "LineString"],
       ["!=", "mode", "static"],
+      ["!=", "line-type", "dashed"]
     ],
     layout: {
       "line-cap": "round",
@@ -108,11 +109,36 @@ export default [
       "line-width": ["coalesce", ["get", "line-width"], 2],
     },
   },
+  // 线非选中态 虚线
+  {
+    id: "gl-draw-line-inactive-dashed",
+    type: "line",
+    filter: [
+      "all",
+      ["==", "active", "false"],
+      ["==", "$type", "LineString"],
+      ["!=", "mode", "static"],
+      ["==", "line-type", "dashed"]
+    ],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": ["coalesce", ["get", "line-color"], "#e600ff"],
+      "line-width": ["coalesce", ["get", "line-width"], 2],
+      "line-dasharray": [0.2, 2],
+    },
+  },
   // 线要素选中态
   {
-    id: "gl-draw-line-active",
+    id: "gl-draw-line-active-dashed",
     type: "line",
-    filter: ["all", ["==", "$type", "LineString"], ["==", "active", "true"]],
+    filter: ["all",
+      ["==", "$type", "LineString"],
+      ["==", "active", "true"],
+      ["==", "line-active-type", "dashed"]
+    ],
     layout: {
       "line-cap": "round",
       "line-join": "round",
@@ -122,6 +148,110 @@ export default [
       "line-dasharray": [0.2, 2],
       "line-width": ["coalesce", ["get", "line-width"], 2]
     },
+  },
+  {
+    id: "gl-draw-line-active-solid",
+    type: "line",
+    filter: ["all",
+      ["==", "$type", "LineString"],
+      ["==", "active", "true"],
+      ["!=", "line-active-type", "dashed"]
+    ],
+    layout: {
+      "line-cap": "round",
+      "line-join": "round",
+    },
+    paint: {
+      "line-color": ["coalesce", ["get", "line-active-color"], "#ff0000"],
+      "line-width": ["coalesce", ["get", "line-width"], 2]
+    },
+  },
+  // 线要素 名称显示
+  {
+    id: "gl-draw-line-name",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "LineString"],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+      ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]]
+    ],
+    layout: {
+      "text-allow-overlap": true,
+      "text-field": ["get", "name"],
+      "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
+      "text-line-height": 1,
+      "text-size": ["coalesce", ["get", "text-size"], 14],
+      "text-justify": "center",
+      "text-offset": [
+        "case",
+        ["to-boolean", ["get", "text-offset"]],
+        ["get", "text-offset"],
+        [
+          "match",
+          ["get", "text-anchor"],
+          "left",  ["literal", [0.6, 0]],
+          "right", ["literal", [-0.6, 0]],
+          "top", ["literal", [0, 0.6]],
+          "bottom", ["literal", [0, -0.6]],
+          ["literal", [0, 0]]
+        ]
+      ],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+    },
+    minzoom: 10,
+  },
+  {
+    id: "gl-draw-line-name-inline",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "LineString"],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+      ["any", ["==", "symbol-placement", "line"], ["==", "symbol-placement", "line-center"]]
+    ],
+    layout: {
+      "text-allow-overlap": true,
+      "text-field": ["get", "name"],
+      "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
+      "text-line-height": 1,
+      "text-size": ["coalesce", ["get", "text-size"], 14],
+      "text-justify": "auto",
+      "text-offset": [
+        "case",
+        ["to-boolean", ["get", "text-offset"]],
+        ["get", "text-offset"],
+        [
+          "match",
+          ["get", "text-anchor"],
+          "left",  ["literal", [0.6, 0]],
+          "right", ["literal", [-0.6, 0]],
+          "top", ["literal", [0, 0.6]],
+          "bottom", ["literal", [0, -0.6]],
+          ["literal", [0, 0]]
+        ]
+      ],
+      "symbol-placement": "line",
+      "text-pitch-alignment": "viewport",
+      "text-padding": 0,
+      "symbol-spacing": [
+        "interpolate",
+        ["exponential", 1],
+        ["zoom"],
+        8,
+        40,
+        20,
+        80
+      ]
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+    },
+    minzoom: 10,
   },
   // 面和线要素 顶点 非选中状态描边
   {
@@ -203,12 +333,19 @@ export default [
       "text-line-height": 1,
       "text-size": ["coalesce", ["get", "text-size"], 14],
       "text-justify": "center",
-      "text-offset": ["match", ["get", "text-anchor"],
-        "left",  ["literal", [0.6, 0]],
-        "right", ["literal", [-0.6, 0]],
-        "top", ["literal", [0, 0.6]],
-        "bottom", ["literal", [0, -0.6]],
-        ["literal", [0.6, 0]]
+      "text-offset": [
+        "case",
+        ["to-boolean", ["get", "text-offset"]],
+        ["get", "text-offset"],
+        [
+          "match",
+          ["get", "text-anchor"],
+          "left",  ["literal", [0.6, 0]],
+          "right", ["literal", [-0.6, 0]],
+          "top", ["literal", [0, 0.6]],
+          "bottom", ["literal", [0, -0.6]],
+          ["literal", [0, 0]]
+        ]
       ],
     },
     paint: {
