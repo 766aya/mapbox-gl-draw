@@ -70,7 +70,11 @@ document.getElementById("button-lay-line").addEventListener("click", () => {
 document.getElementById("button-custom-point").addEventListener("click", () => {
   const iconName = document.getElementById("custom-point-select").value;
   draw.changeMode("draw_custom_point", {
-    "icon-image": iconName
+    "icon-image": iconName,
+    "text-anchor": "top",
+    "text-offset": [0, 0],
+    disabled: false,
+    name: "沉船"
   });
 });
 

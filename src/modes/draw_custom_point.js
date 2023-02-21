@@ -3,11 +3,12 @@ import DrawPoint from "./draw_point";
 
 const DrawCustomPoint = {...DrawPoint};
 
-DrawCustomPoint.onSetup = function() {
+DrawCustomPoint.onSetup = function(properties) {
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {
-      featureType: "customPoint"
+      featureType: "customPoint",
+      ...properties
     },
     geometry: {
       type: Constants.geojsonTypes.POINT,

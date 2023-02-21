@@ -293,6 +293,7 @@ export default [
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
+      ['!=', 'featureType', 'customPoint']
     ],
     paint: {
       "circle-radius": 5,
@@ -310,13 +311,14 @@ export default [
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
+      ['!=', 'featureType', 'customPoint']
     ],
     paint: {
       "circle-radius": 3,
       "circle-color": ["coalesce", ["get", "circle-color"], "#e600ff"],
     },
   },
-  // 点标绘的名称
+  // 非选中状态 点标绘的名称
   {
     id: "gl-draw-point-name",
     type: "symbol",
@@ -325,9 +327,11 @@ export default [
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
+      // ["==", "active", "false"],
     ],
     layout: {
       "text-allow-overlap": true,
+      "icon-allow-overlap": true,
       "text-field": ["get", "name"],
       "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
       "text-line-height": 1,
@@ -347,11 +351,14 @@ export default [
           ["literal", [0, 0]]
         ]
       ],
+      "icon-image": ["concat", "mapbox-gl-draw-", ["get", "icon-image"]],
+      "icon-anchor": ["coalesce", ["get", "icon-anchor"], "bottom"],
+      "icon-size": ['interpolate', ['linear'], ['zoom'], 0, 0.01, 19, ["coalesce", ["get", "icon-size"], 1]],
     },
     paint: {
       "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
     },
-    minzoom: 10,
+    // minzoom: 10,
   },
   // 点要素以及顶点被选中时 底层模拟描边
   {
@@ -362,6 +369,7 @@ export default [
       ["==", "$type", "Point"],
       ["==", "active", "true"],
       ["!=", "meta", "midpoint"],
+      ['!=', 'featureType', 'customPoint']
     ],
     paint: {
       "circle-radius": ["case", ["has", "line-width"], ["+", ["get", "line-width"], 5], 7],
@@ -377,6 +385,7 @@ export default [
       ["==", "$type", "Point"],
       ["!=", "meta", "midpoint"],
       ["==", "active", "true"],
+      ['!=', 'featureType', 'customPoint']
     ],
     paint: {
       "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],
@@ -387,6 +396,46 @@ export default [
       ],
     },
   },
+  // 点标绘选中态 名称
+  // {
+  //   id: "gl-draw-point-name-active",
+  //   type: "symbol",
+  //   filter: [
+  //     "all",
+  //     ["==", "$type", "Point"],
+  //     ["==", "meta", "feature"],
+  //     ["!=", "mode", "static"],
+  //     ["==", "active", "true"],
+  //   ],
+  //   layout: {
+  //     "text-allow-overlap": true,
+  //     "text-field": ["get", "name"],
+  //     "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
+  //     "text-line-height": 1,
+  //     "text-size": ["coalesce", ["get", "text-size"], 14],
+  //     "text-justify": "center",
+  //     "text-offset": [
+  //       "case",
+  //       ["to-boolean", ["get", "text-offset"]],
+  //       ["get", "text-offset"],
+  //       [
+  //         "match",
+  //         ["get", "text-anchor"],
+  //         "left",  ["literal", [0.6, 0]],
+  //         "right", ["literal", [-0.6, 0]],
+  //         "top", ["literal", [0, 0.6]],
+  //         "bottom", ["literal", [0, -0.6]],
+  //         ["literal", [0, 0]]
+  //       ]
+  //     ],
+  //     "icon-image": ["concat", "mapbox-gl-draw-", ["get", "icon-image"]],
+  //     "icon-anchor": ["coalesce", ["get", "icon-anchor"], "bottom"],
+  //     "icon-size": ['interpolate', ['linear'], ['zoom'], 0, 0.01, 19, ["coalesce", ["get", "user_size"], 1]],
+  //   },
+  //   paint: {
+  //     "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+  //   },
+  // },
   /**
    * 以下是静态模式下各种标绘图层显示样式
    */

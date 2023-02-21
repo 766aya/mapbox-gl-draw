@@ -305,12 +305,6 @@ function createGeodesicGeojson(geojson, options) {
 
     return features;
   }
-
-  // 自定义点标绘
-  function processCustomPoint() {
-
-  }
-
 }
 
 export default createGeodesicGeojson;
