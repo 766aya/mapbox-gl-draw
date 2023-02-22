@@ -9,20 +9,27 @@ import { distance, initialBearing } from '../util/geodesy';
 //扇形
 const DrawSector = {};
 
-DrawSector.onSetup = function() {
+DrawSector.onSetup = function(properties = {}) {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   dragPan.disable(this);
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.setActionableState(); // default actionable state is false for all actions
-  return {};
+  return {
+    properties
+  };
 };
 
 DrawSector.onMouseDown = DrawSector.onTouchStart = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   const handle = [e.lngLat.lng, e.lngLat.lat];
   if (!state.sector) {
     const center = handle;
-    const sector = this.newFeature(createSector(center, Number.EPSILON, 0, 0 + Number.EPSILON, { featureType: "sector" }));
+    const sector = this.newFeature(createSector(center, Number.EPSILON, 0, 0 + Number.EPSILON, {
+      ...state.properties,
+      featureType: "sector"
+    }));
     this.addFeature(sector);
     state.sector = sector;
     return;
@@ -39,7 +46,9 @@ DrawSector.onMouseDown = DrawSector.onTouchStart = function(state, e) {
   }
 };
 
-DrawSector.onMouseMove = function (state, e) {
+DrawSector.onTouchMove = DrawSector.onMouseMove = function (state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   if (state.sector && state[Constants.properties.BEARING1]) {
     const handle = [e.lngLat.lng, e.lngLat.lat];
     const center = state.sector.properties[Constants.properties.CENTER];
@@ -52,10 +61,38 @@ DrawSector.onMouseMove = function (state, e) {
   }
 };
 
-DrawSector.onClick = DrawSector.onTap = function(state) {
+DrawSector.onTouchEnd = function (state, e) {
+  if (state[Constants.properties.BEARING2]) {
+    console.log("DrawSector.onTouchEnd")
+    e.originalEvent.preventDefault();
+    e.originalEvent.stopPropagation();
+    this.map.fire(Constants.events.CREATE, { features: [state.sector.toGeoJSON()] });
+    return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.sector.id] });
+  }
+}
+
+DrawSector.onClick = DrawSector.onTap = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   if (state[Constants.properties.BEARING2]) {
     this.map.fire(Constants.events.CREATE, { features: [state.sector.toGeoJSON()] });
     return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.sector.id] });
+  }
+
+  if (state[Constants.properties.BEARING1]) {
+    const handle = [e.lngLat.lng, e.lngLat.lat];
+    const center = state.sector.properties[Constants.properties.CENTER];
+    const bearing1 = state[Constants.properties.BEARING1];
+    const bearing2 = initialBearing(center, handle);
+    if (Math.abs(bearing1 - bearing2) > 5) {
+      const { geometry, properties } = updateSector(center, state.sector.properties[Constants.properties.RADIUS], bearing1, bearing2, state.sector.toGeoJSON());
+      state.sector.coordinates = geometry.coordinates;
+      state.sector.properties = properties;
+      state[Constants.properties.BEARING2] = bearing2;
+      state.sector.changed();
+      this.map.fire(Constants.events.CREATE, { features: [state.sector.toGeoJSON()] });
+      return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.sector.id] });
+    }
   }
 };
 

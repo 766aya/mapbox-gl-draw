@@ -209,15 +209,20 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
 
+    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
+      ...geojson.properties,
+      featureType: "text"
+    }})
+
     // sector handles
     if (properties.active === Constants.activeStates.ACTIVE) {
       const handle1 = destinationPoint(center, radius, bearing1);
       const handle2 = destinationPoint(center, radius, bearing2);
       const points = [center, handle1, handle2];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
-      return [geodesicGeojson, ...vertices];
+      return [geodesicGeojson, ...vertices, nameGeojson];
     } else {
-      return [geodesicGeojson];
+      return [geodesicGeojson, nameGeojson];
     }
   }
 
