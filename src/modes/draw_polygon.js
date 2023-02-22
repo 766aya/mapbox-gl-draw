@@ -58,6 +58,8 @@ DrawPolygon.onMouseMove = function(state, e) {
 };
 
 DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   return this.clickAnywhere(state, e);
 };
