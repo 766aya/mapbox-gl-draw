@@ -107,7 +107,10 @@ DrawSector.onKeyUp = function(state, e) {
   }
 };
 
-DrawSector.onStop = function() {
+DrawSector.onStop = function(state) {
+  if (!state[Constants.properties.BEARING2] && state[Constants.properties.BEARING2] !== 0) {
+    this.deleteFeature([state.sector.id], { silent: true });
+  }
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   dragPan.enable(this);

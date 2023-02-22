@@ -20,6 +20,9 @@ DrawCircle.onSetup = function(properties) {
 };
 
 DrawCircle.onMouseDown = DrawCircle.onTouchStart = function(state, e) {
+  if (state.circle) {
+    this.deleteFeature([state.circle.id], { silent: true });
+  };
   const center = [e.lngLat.lng, e.lngLat.lat];
   const circle = this.newFeature(createCircle(center, Number.EPSILON, {
     ...state.properties,
@@ -43,6 +46,8 @@ DrawCircle.onDrag = DrawCircle.onTouchMove = function(state, e) {
 };
 
 DrawCircle.onMouseUp = DrawCircle.onTouchEnd = function(state) {
+  const radius = state.circle.properties[Constants.properties.RADIUS]
+  if (!radius || radius === Number.EPSILON) return;
   this.map.fire(Constants.events.CREATE, { features: [state.circle.toGeoJSON()] });
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.circle.id] });
 };
@@ -58,7 +63,11 @@ DrawCircle.onKeyUp = function(state, e) {
   }
 };
 
-DrawCircle.onStop = function() {
+DrawCircle.onStop = function(state) {
+  const radius = state.circle.properties[Constants.properties.RADIUS]
+  if (!radius || radius === Number.EPSILON) {
+    this.deleteFeature([state.circle.id], { silent: true });
+  }
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   dragPan.enable(this);
