@@ -24,8 +24,6 @@ SimpleSelect.onSetup = function (opts) {
     initiallySelectedFeatureIds: opts.featureIds || [],
   };
 
-  console.log("SimpleSelect.onSetup", state);
-
   if (opts.disabled === false) {
     this.setSelected(
       state.initiallySelectedFeatureIds.filter(

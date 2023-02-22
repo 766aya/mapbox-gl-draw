@@ -8,18 +8,23 @@ import doubleClickZoom from '../lib/double_click_zoom';
 
 const DrawCircle = {};
 
-DrawCircle.onSetup = function() {
+DrawCircle.onSetup = function(properties) {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   dragPan.disable(this);
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.setActionableState(); // default actionable state is false for all actions
-  return {};
+  return {
+    properties,
+  };
 };
 
 DrawCircle.onMouseDown = DrawCircle.onTouchStart = function(state, e) {
   const center = [e.lngLat.lng, e.lngLat.lat];
-  const circle = this.newFeature(createCircle(center, Number.EPSILON, { featureType: 'circle' }));
+  const circle = this.newFeature(createCircle(center, Number.EPSILON, {
+    ...state.properties,
+    featureType: 'circle'
+  }));
   this.addFeature(circle);
   state.circle = circle;
 };

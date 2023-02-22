@@ -43,6 +43,7 @@ DrawArrow.onSetup = function (opts = {}) {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
       properties: {
+        ...opts,
         featureType: "arrow"
       },
       geometry: {

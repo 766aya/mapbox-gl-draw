@@ -34,6 +34,15 @@ export default function(ctx, api) {
     ctx.store.render();
   };
 
+  api.renderBatch = function () {
+    const renderBatch = ctx.store.createRenderBatch();
+    renderBatch();
+  }
+
+  api.render = function () {
+    ctx.store.render();
+  }
+
   api.getFeatureIdsAt = function(point) {
     const features = featuresAt.click({ point }, null, ctx);
     return features.map(feature => feature.properties.id);

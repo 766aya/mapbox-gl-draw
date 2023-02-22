@@ -6,16 +6,20 @@ import createGeodesicGeojson from "../util/createGeodesicGeojson";
 
 const DrawRectangle = {};
 
-DrawRectangle.onSetup = function () {
+DrawRectangle.onSetup = function (properties = {}) {
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   dragPan.disable(this);
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.setActionableState(); // default actionable state is false for all actions
-  return {};
+  return {
+    properties
+  };
 };
 
 DrawRectangle.onMouseDown = DrawRectangle.onTouchStart = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   const point = [e.lngLat.lng, e.lngLat.lat];
   const rectangle = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
@@ -32,6 +36,7 @@ DrawRectangle.onMouseDown = DrawRectangle.onTouchStart = function(state, e) {
       ]
     },
     properties: {
+      ...state.properties,
       featureType: "rectangle",
       [Constants.properties.POINT1]: point
     }
@@ -41,6 +46,8 @@ DrawRectangle.onMouseDown = DrawRectangle.onTouchStart = function(state, e) {
 };
 
 DrawRectangle.onDrag = DrawRectangle.onTouchMove = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   if (state.rectangle) {
     const p1 = state.rectangle.properties[Constants.properties.POINT1];
     const p2 = [e.lngLat.lng, e.lngLat.lat];

@@ -43,7 +43,10 @@ DrawLineString.onSetup = function(opts = {}) {
   } else {
     line = this.newFeature({
       type: Constants.geojsonTypes.FEATURE,
-      properties: opts,
+      properties: {
+        ...opts,
+        featureType: "lineString"
+      },
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
         coordinates: []
@@ -95,6 +98,8 @@ DrawLineString.onMouseMove = function(state, e) {
 };
 
 DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   if (CommonSelectors.isVertex(e)) return this.clickOnVertex(state, e);
   this.clickAnywhere(state, e);
 };

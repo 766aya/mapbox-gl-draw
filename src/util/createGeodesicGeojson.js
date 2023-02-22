@@ -146,7 +146,13 @@ function createGeodesicGeojson(geojson, options) {
         coordinates: geodesicCoordinates
       }
     };
-    return [geodesicGeojson];
+    
+    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
+      ...geojson.properties,
+      featureType: "text"
+    }})
+
+    return [geodesicGeojson, nameGeojson];
   }
 
   function processCircle() {
@@ -163,14 +169,25 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
 
+    const nameGeojson = {
+      type: "Feature",
+      properties: Object.assign(geojson.properties || {}, {
+        featureType: "text"
+      }),
+      geometry: {
+        type: "Point",
+        coordinates: center
+      }
+    }
+
     // circle handles
     if (properties.active === Constants.activeStates.ACTIVE) {
       const handle = destinationPoint(center, radius, handleBearing);
       const points = [center, handle];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`), geojson.properties || {}));
-      return [geodesicGeojson, ...vertices];
+      return [geodesicGeojson, ...vertices, nameGeojson];
     } else {
-      return [geodesicGeojson];
+      return [geodesicGeojson, nameGeojson];
     }
   }
 
@@ -225,12 +242,16 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
 
+    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: Object.assign(geojson.properties || {}, {
+      featureType: "text"
+    })})
+
     if (properties.active === Constants.activeStates.ACTIVE) {
       const points = [p1, p2];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
-      return [geodesicGeojson, ...vertices];
+      return [geodesicGeojson, ...vertices, nameGeojson];
     } else {
-      return [geodesicGeojson];
+      return [geodesicGeojson, nameGeojson];
     }
   }
 
@@ -262,6 +283,9 @@ function createGeodesicGeojson(geojson, options) {
     const features = processLine();
     const points = [...feature.coordinates];
     points.shift();
+    if (properties.active == 'true') {
+      points.pop();
+    }
 
     const vertices = points.map((point, index) => {
       const p1 = turf.point(feature.coordinates[index]);
@@ -271,6 +295,7 @@ function createGeodesicGeojson(geojson, options) {
       return {
         type: Constants.geojsonTypes.FEATURE,
         properties: {
+          ...geojson.properties,
           meta: Constants.meta.ARROW,
           "icon-rotate": rotate,
           parent: properties.id,

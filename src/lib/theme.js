@@ -11,7 +11,7 @@ export default [
         "case",
         ["==", ["get", "is-active"], "true"],
         "#ff0000",
-        "#e600ff",
+        ["coalesce", ["get", "arrow-color"], ["get", "line-color"], "#FF0000"],
       ],
     },
     layout: {
@@ -20,7 +20,7 @@ export default [
       "icon-image": "mapbox-gl-draw-icon-arrow",
       "icon-rotate": ["get", "icon-rotate"],
       "text-allow-overlap": true,
-      "icon-size": 0.5,
+      "icon-size": ["coalesce", ["get", "arrow-size"], 0.5],
     },
   },
   {
@@ -33,9 +33,9 @@ export default [
       ["!=", "mode", "static"],
     ],
     paint: {
-      "fill-color": "#e600ff",
-      "fill-outline-color": "#e600ff",
-      "fill-opacity": 0.1,
+      "fill-color": ["coalesce", ["get", "fill-color"], "#ff0000"],
+      "fill-outline-color": ["coalesce", ["get", "fill-color"], "#ff0000"],
+      "fill-opacity": ["coalesce", ["get", "fill-opacity"], 0.1],
     },
   },
   {
@@ -43,9 +43,9 @@ export default [
     type: "fill",
     filter: ["all", ["==", "active", "true"], ["==", "$type", "Polygon"]],
     paint: {
-      "fill-color": "#ff0000",
-      "fill-outline-color": "#ff0000",
-      "fill-opacity": 0.1,
+      "fill-color": ["coalesce", ["get", "fill-active-color"], ["get", "fill-color"], "#ff0000"],
+      "fill-outline-color": ["coalesce", ["get", "fill-active-color"], ["get", "fill-color"], "#ff0000"],
+      "fill-opacity": ["coalesce", ["get", "fill-opacity"], 0.1],
     },
   },
   {
@@ -71,8 +71,8 @@ export default [
       "line-join": "round",
     },
     paint: {
-      "line-color": "#e600ff",
-      "line-width": 2,
+      "line-color": ["coalesce", ["get", "line-color"], "#e600ff"],
+      "line-width": ["coalesce", ["get", "line-width"], 2],
     },
   },
   {
@@ -84,12 +84,51 @@ export default [
       "line-join": "round",
     },
     paint: {
-      "line-color": "#ff0000",
+      "line-color": ["coalesce", ["get", "line-active-color"], "#FF0000"],
       "line-dasharray": [0.2, 2],
-      "line-width": 2,
+      "line-width": ["coalesce", ["get", "line-width"], 2],
     },
   },
-  // 线非选中态 实现
+  // {
+  //   id: "gl-draw-polygon-name",
+  //   type: "symbol",
+  //   filter: [
+  //     "all",
+  //     ["==", "$type", "Polygon"],
+  //     ["==", "meta", "feature"],
+  //     ["!=", "mode", "static"]
+  //   ],
+  //   layout: {
+  //     "text-allow-overlap": true,
+  //     "text-field": ["get", "name"],
+  //     "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
+  //     "text-line-height": 1,
+  //     "text-size": ["coalesce", ["get", "text-size"], 14],
+  //     "text-justify": "center",
+  //     "text-offset": [
+  //       "case",
+  //       ["to-boolean", ["get", "text-offset"]],
+  //       ["get", "text-offset"],
+  //       [
+  //         "match",
+  //         ["get", "text-anchor"],
+  //         "left",  ["literal", [0.6, 0]],
+  //         "right", ["literal", [-0.6, 0]],
+  //         "top", ["literal", [0, 0.6]],
+  //         "bottom", ["literal", [0, -0.6]],
+  //         ["literal", [0, 0]]
+  //       ]
+  //     ],
+  //     "symbol-placement": "point"
+  //   },
+  //   paint: {
+  //     "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+  //     "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
+  //     "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
+  //     "text-halo-blur": ["get", "text-halo-blur"],
+  //   }
+  // },
+  // 线非选中态 实线
   {
     id: "gl-draw-line-inactive-solid",
     type: "line",
@@ -201,8 +240,10 @@ export default [
     },
     paint: {
       "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
-    },
-    minzoom: 10,
+      "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
+      "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
+      "text-halo-blur": ["get", "text-halo-blur"],
+    }
   },
   {
     id: "gl-draw-line-name-inline",
@@ -250,6 +291,9 @@ export default [
     },
     paint: {
       "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+      "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
+      "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
+      "text-halo-blur": ["get", "text-halo-blur"],
     },
     minzoom: 10,
   },
@@ -293,7 +337,8 @@ export default [
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
-      ['!=', 'featureType', 'customPoint']
+      ['!=', 'featureType', 'customPoint'],
+      ['!=', 'featureType', 'text'],
     ],
     paint: {
       "circle-radius": 5,
@@ -311,7 +356,8 @@ export default [
       ["==", "$type", "Point"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
-      ['!=', 'featureType', 'customPoint']
+      ['!=', 'featureType', 'customPoint'],
+      ['!=', 'featureType', 'text'],
     ],
     paint: {
       "circle-radius": 3,
@@ -357,6 +403,9 @@ export default [
     },
     paint: {
       "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+      "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
+      "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
+      "text-halo-blur": ["get", "text-halo-blur"],
     },
     // minzoom: 10,
   },
@@ -369,7 +418,8 @@ export default [
       ["==", "$type", "Point"],
       ["==", "active", "true"],
       ["!=", "meta", "midpoint"],
-      ['!=', 'featureType', 'customPoint']
+      ['!=', 'featureType', 'customPoint'],
+      ['!=', 'featureType', 'text'],
     ],
     paint: {
       "circle-radius": ["case", ["has", "line-width"], ["+", ["get", "line-width"], 5], 7],
@@ -385,7 +435,8 @@ export default [
       ["==", "$type", "Point"],
       ["!=", "meta", "midpoint"],
       ["==", "active", "true"],
-      ['!=', 'featureType', 'customPoint']
+      ['!=', 'featureType', 'customPoint'],
+      ['!=', 'featureType', 'text'],
     ],
     paint: {
       "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],

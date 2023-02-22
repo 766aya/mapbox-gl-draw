@@ -7,10 +7,13 @@ import createGeodesicGeojson from '../util/createGeodesicGeojson';
 
 const DrawPolygon = {};
 
-DrawPolygon.onSetup = function() {
+DrawPolygon.onSetup = function(properties = {}) {
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties: {},
+    properties: {
+      ...properties,
+      featureType: "polygon"
+    },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
       coordinates: [[]]
@@ -125,7 +128,10 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
     // create an initial vertex so that we can track the first point on mobile devices
     displayGeodesic({
       type: Constants.geojsonTypes.FEATURE,
-      properties: geojson.properties,
+      properties: {
+        ...geojson.properties,
+        name: null
+      },
       geometry: {
         coordinates: lineCoordinates,
         type: Constants.geojsonTypes.LINE_STRING

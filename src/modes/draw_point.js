@@ -8,7 +8,10 @@ DrawPoint.onSetup = function (properties = {}) {
 
   const point = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
-    properties,
+    properties: {
+      ...properties,
+      featureType: "point",
+    },
     geometry: {
       type: Constants.geojsonTypes.POINT,
       coordinates: [],
