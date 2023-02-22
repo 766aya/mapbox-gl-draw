@@ -147,12 +147,15 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
     
-    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
-      ...geojson.properties,
-      featureType: "text"
-    }})
-
-    return [geodesicGeojson, nameGeojson];
+    try {
+      const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
+        ...geojson.properties,
+        featureType: "text"
+      }})
+      return [geodesicGeojson, nameGeojson];
+    } catch (error) {
+      return [geodesicGeojson];
+    }
   }
 
   function processCircle() {
@@ -209,10 +212,17 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
 
-    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
-      ...geojson.properties,
-      featureType: "text"
-    }})
+    const features = [];
+
+    try {
+      const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
+        ...geojson.properties,
+        featureType: "text"
+      }})
+      features.push(nameGeojson)
+    } catch (err) {
+      // ....
+    }
 
     // sector handles
     if (properties.active === Constants.activeStates.ACTIVE) {
@@ -220,10 +230,11 @@ function createGeodesicGeojson(geojson, options) {
       const handle2 = destinationPoint(center, radius, bearing2);
       const points = [center, handle1, handle2];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
-      return [geodesicGeojson, ...vertices, nameGeojson];
+      features.push(geodesicGeojson, ...vertices)
     } else {
-      return [geodesicGeojson, nameGeojson];
+      features.push(geodesicGeojson)
     }
+    return features;
   }
 
   function processRectangle() {
@@ -247,17 +258,26 @@ function createGeodesicGeojson(geojson, options) {
       }
     };
 
-    const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: Object.assign(geojson.properties || {}, {
-      featureType: "text"
-    })})
+    let features = [];
+    
+    try {
+      const nameGeojson = turf.centerOfMass(geodesicGeojson, { properties: {
+        ...geojson.properties,
+        featureType: "text"
+      }})
+      features.push(nameGeojson)
+    } catch (err) {
+      // ....
+    }
 
     if (properties.active === Constants.activeStates.ACTIVE) {
       const points = [p1, p2];
       const vertices = points.map((point, i) => createVertex(properties.id, point, `0.${i}`, isSelectedPath(`0.${i}`)), geojson.properties || {});
-      return [geodesicGeojson, ...vertices, nameGeojson];
+      features.push(geodesicGeojson, ...vertices);
     } else {
-      return [geodesicGeojson, nameGeojson];
+      features.push(geodesicGeojson);
     }
+    return features;
   }
 
   function processMultiGeometry() {

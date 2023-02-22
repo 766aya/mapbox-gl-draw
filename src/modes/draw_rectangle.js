@@ -59,7 +59,9 @@ DrawRectangle.onDrag = DrawRectangle.onTouchMove = function(state, e) {
   }
 };
 
-DrawRectangle.onMouseUp = DrawRectangle.onTouchEnd = function(state) {
+DrawRectangle.onMouseUp = DrawRectangle.onTouchEnd = function(state, e) {
+  e.originalEvent.preventDefault();
+  e.originalEvent.stopPropagation();
   this.map.fire(Constants.events.CREATE, { features: [state.rectangle.toGeoJSON()] });
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.rectangle.id] });
 };
