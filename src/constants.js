@@ -24,6 +24,7 @@ export const properties = {
   STEPS: 'steps',
   POINT1: 'p1',
   POINT2: 'p2',
+  DISABLED: "disabled"
 };
 
 export const sources = {

@@ -89,45 +89,6 @@ export default [
       "line-width": ["coalesce", ["get", "line-width"], 2],
     },
   },
-  // {
-  //   id: "gl-draw-polygon-name",
-  //   type: "symbol",
-  //   filter: [
-  //     "all",
-  //     ["==", "$type", "Polygon"],
-  //     ["==", "meta", "feature"],
-  //     ["!=", "mode", "static"]
-  //   ],
-  //   layout: {
-  //     "text-allow-overlap": true,
-  //     "text-field": ["get", "name"],
-  //     "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
-  //     "text-line-height": 1,
-  //     "text-size": ["coalesce", ["get", "text-size"], 14],
-  //     "text-justify": "center",
-  //     "text-offset": [
-  //       "case",
-  //       ["to-boolean", ["get", "text-offset"]],
-  //       ["get", "text-offset"],
-  //       [
-  //         "match",
-  //         ["get", "text-anchor"],
-  //         "left",  ["literal", [0.6, 0]],
-  //         "right", ["literal", [-0.6, 0]],
-  //         "top", ["literal", [0, 0.6]],
-  //         "bottom", ["literal", [0, -0.6]],
-  //         ["literal", [0, 0]]
-  //       ]
-  //     ],
-  //     "symbol-placement": "point"
-  //   },
-  //   paint: {
-  //     "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
-  //     "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
-  //     "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
-  //     "text-halo-blur": ["get", "text-halo-blur"],
-  //   }
-  // },
   // 线非选中态 实线
   {
     id: "gl-draw-line-inactive-solid",
@@ -205,8 +166,38 @@ export default [
       "line-width": ["coalesce", ["get", "line-width"], 2]
     },
   },
-  // 线要素 名称显示
+  // 面和线要素 顶点 非选中状态描边
   {
+    id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],
+      "circle-color": "#fff",
+    },
+  },
+  // 面和线要素 顶点 - 非选中状态
+  {
+    id: "gl-draw-polygon-and-line-vertex-inactive",
+    type: "circle",
+    filter: [
+      "all",
+      ["==", "meta", "vertex"],
+      ["==", "$type", "Point"],
+      ["!=", "mode", "static"],
+    ],
+    paint: {
+      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 1], 3],
+      "circle-color": ["coalesce", ["get", "line-active-color"], "#ff0000"],
+    },
+  },
+   // 线要素 名称显示
+   {
     id: "gl-draw-line-name",
     type: "symbol",
     filter: [
@@ -296,36 +287,6 @@ export default [
       "text-halo-blur": ["get", "text-halo-blur"],
     },
     minzoom: 10,
-  },
-  // 面和线要素 顶点 非选中状态描边
-  {
-    id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
-    type: "circle",
-    filter: [
-      "all",
-      ["==", "meta", "vertex"],
-      ["==", "$type", "Point"],
-      ["!=", "mode", "static"],
-    ],
-    paint: {
-      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 3], 5],
-      "circle-color": "#fff",
-    },
-  },
-  // 面和线要素 顶点 - 非选中状态
-  {
-    id: "gl-draw-polygon-and-line-vertex-inactive",
-    type: "circle",
-    filter: [
-      "all",
-      ["==", "meta", "vertex"],
-      ["==", "$type", "Point"],
-      ["!=", "mode", "static"],
-    ],
-    paint: {
-      "circle-radius": ["coalesce", ["+", ["get", "line-width"], 1], 3],
-      "circle-color": ["coalesce", ["get", "line-active-color"], "#ff0000"],
-    },
   },
   // 点标绘非选中态 底层模拟描边
   {

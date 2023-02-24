@@ -77,7 +77,6 @@ DirectSelect.onFeature = function (state, e) {
 };
 
 DirectSelect.dragFeature = function (state, e, delta) {
-  console.log("dragFeature", state);
   if (state.canFeatureMove) {
     moveFeatures(this.getSelected(), delta);
     state.dragMoveLocation = e.lngLat;
@@ -86,6 +85,7 @@ DirectSelect.dragFeature = function (state, e, delta) {
 
 DirectSelect.dragVertex = function (state, e, delta) {
   const geojson = state.feature.toGeoJSON();
+  
   if (isCircle(geojson)) {
     if (state.selectedCoordPaths[0] === '0.1') {
       const center = getCircleCenter(geojson);
@@ -143,6 +143,8 @@ DirectSelect.clickNoTarget = function () {
 };
 
 DirectSelect.clickInactive = function (state, e) {
+  if (e.featureTarget.properties[Constants.properties.DISABLED] === true) return;
+
   // this.changeMode(Constants.modes.SIMPLE_SELECT);
   if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
     // switch to direct_select mode for polygon/line features
@@ -170,7 +172,6 @@ DirectSelect.clickActiveFeature = function (state) {
 DirectSelect.onSetup = function (opts) {
   const featureId = opts.featureId;
   const feature = this.getFeature(featureId);
-  console.log("DirectSelect.onSetup", opts);
 
   if (!feature) {
     throw new Error('You must provide a featureId to enter direct_select mode');

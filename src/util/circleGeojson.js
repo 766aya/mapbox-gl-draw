@@ -26,7 +26,7 @@ export function createCircle(center, radius, properties = {}) {
 }
 
 export function isCircle(geojson) {
-  return (geojson.properties.featureType === 'circle') || (Array.isArray(geojson.properties.center) && geojson.properties.radius);
+  return geojson.properties.featureType === 'circle';
 }
 
 export function getCircleCenter(geojson) {

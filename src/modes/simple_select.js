@@ -234,8 +234,7 @@ SimpleSelect.clickOnFeature = function (state, e) {
       this.setSelected(e.featureTarget.properties.id);
     }
   };
-
-  if (e.featureTarget.properties.disabled === false) {
+  if (e.featureTarget.properties[Constants.properties.DISABLED] === false) {
     selectedChange();
   } else {
     e.target.fire("draw.clickOnFeature", {
