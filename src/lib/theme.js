@@ -206,47 +206,6 @@ export default [
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
       ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]],
-      ["==", "active", "true"]
-    ],
-    layout: {
-      "text-allow-overlap": true,
-      "text-field": ["get", "name"],
-      "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
-      "text-line-height": 1,
-      "text-size": ["coalesce", ["get", "text-size"], 14],
-      "text-justify": "center",
-      "text-offset": [
-        "case",
-        ["to-boolean", ["get", "text-offset"]],
-        ["get", "text-offset"],
-        [
-          "match",
-          ["get", "text-anchor"],
-          "left",  ["literal", [0.6, 0]],
-          "right", ["literal", [-0.6, 0]],
-          "top", ["literal", [0, 0.6]],
-          "bottom", ["literal", [0, -0.6]],
-          ["literal", [0, 0]]
-        ]
-      ],
-    },
-    paint: {
-      "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
-      "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
-      "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
-      "text-halo-blur": ["get", "text-halo-blur"],
-    }
-  },
-  {
-    id: "gl-draw-line-name-inactive",
-    type: "symbol",
-    filter: [
-      "all",
-      ["==", "$type", "LineString"],
-      ["==", "meta", "feature"],
-      ["!=", "mode", "static"],
-      ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]],
-      ["==", "active", "false"]
     ],
     layout: {
       "text-allow-overlap": true,
