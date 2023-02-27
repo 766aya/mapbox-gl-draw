@@ -11,7 +11,6 @@ import createGeodesicGeojson from "../util/createGeodesicGeojson";
 const SimpleSelect = {};
 
 SimpleSelect.onSetup = function (opts) {
-  console.trace(opts)
   // turn the opts into state.
   const state = {
     dragMoveLocation: null,
@@ -24,7 +23,6 @@ SimpleSelect.onSetup = function (opts) {
     canFeatureMove: opts.canFeatureMove !== false,
     initiallySelectedFeatureIds: opts.featureIds || [],
   };
-  console.log(opts.disabled === false)
   if (opts.disabled === false) {
     this.setSelected(
       state.initiallySelectedFeatureIds.filter(
@@ -181,7 +179,6 @@ SimpleSelect.startOnActiveFeature = function (state, e) {
 };
 
 SimpleSelect.clickOnFeature = function (state, e) {
-  console.log(e.featureTarget.properties)
   const selectedChange = () => {
     if (e.featureTarget.geometry.type !== Constants.geojsonTypes.POINT) {
       this.changeMode(Constants.modes.DIRECT_SELECT, {

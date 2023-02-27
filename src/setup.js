@@ -41,7 +41,7 @@ export default function(ctx) {
       ctx.events.addEventListeners();
     },
     onAdd(map) {
-      if (process.env.NODE_ENV !== 'test') {
+      if (ctx.options.debug) {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         const _fire = map.fire;
@@ -82,6 +82,7 @@ export default function(ctx) {
       }
 
       ctx.events.start();
+      ctx.options.debug && console.log(ctx);
       return controlContainer;
     },
     addLayers() {

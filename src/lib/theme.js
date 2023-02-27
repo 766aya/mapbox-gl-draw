@@ -5,7 +5,7 @@ export default [
   {
     id: "gl-draw-point-arrow",
     type: "symbol",
-    filter: ["all", ["==", "$type", "Point"], ["==", "meta", "arrow"]],
+    filter: ["all", ["==", "$type", "Point"], ["==", "meta", "arrow"], ["==", "active", "false"]],
     paint: {
       "icon-color": [
         "case",
@@ -197,7 +197,7 @@ export default [
     },
   },
    // 线要素 名称显示
-   {
+  {
     id: "gl-draw-line-name",
     type: "symbol",
     filter: [
@@ -205,7 +205,48 @@ export default [
       ["==", "$type", "LineString"],
       ["==", "meta", "feature"],
       ["!=", "mode", "static"],
-      ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]]
+      ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]],
+      ["==", "active", "true"]
+    ],
+    layout: {
+      "text-allow-overlap": true,
+      "text-field": ["get", "name"],
+      "text-anchor": ["coalesce", ["get", "text-anchor"], "left"],
+      "text-line-height": 1,
+      "text-size": ["coalesce", ["get", "text-size"], 14],
+      "text-justify": "center",
+      "text-offset": [
+        "case",
+        ["to-boolean", ["get", "text-offset"]],
+        ["get", "text-offset"],
+        [
+          "match",
+          ["get", "text-anchor"],
+          "left",  ["literal", [0.6, 0]],
+          "right", ["literal", [-0.6, 0]],
+          "top", ["literal", [0, 0.6]],
+          "bottom", ["literal", [0, -0.6]],
+          ["literal", [0, 0]]
+        ]
+      ],
+    },
+    paint: {
+      "text-color": ["coalesce", ["get", "text-color"], "#FF0000"],
+      "text-halo-width": ["coalesce", ["get", "text-halo-width"], 1],
+      "text-halo-color": ["coalesce", ["get", "text-halo-color"], "#FFFFFF"],
+      "text-halo-blur": ["get", "text-halo-blur"],
+    }
+  },
+  {
+    id: "gl-draw-line-name-inactive",
+    type: "symbol",
+    filter: [
+      "all",
+      ["==", "$type", "LineString"],
+      ["==", "meta", "feature"],
+      ["!=", "mode", "static"],
+      ["all", ["!=", "symbol-placement", "line"], ["!=", "symbol-placement", "line-center"]],
+      ["==", "active", "false"]
     ],
     layout: {
       "text-allow-overlap": true,
@@ -451,49 +492,49 @@ export default [
   /**
    * 以下是静态模式下各种标绘图层显示样式
    */
-  {
-    id: "gl-draw-polygon-fill-static",
-    type: "fill",
-    filter: ["all", ["==", "mode", "static"], ["==", "$type", "Polygon"]],
-    paint: {
-      "fill-color": "#404040",
-      "fill-outline-color": "#404040",
-      "fill-opacity": 0.1,
-    },
-  },
-  {
-    id: "gl-draw-polygon-stroke-static",
-    type: "line",
-    filter: ["all", ["==", "mode", "static"], ["==", "$type", "Polygon"]],
-    layout: {
-      "line-cap": "round",
-      "line-join": "round",
-    },
-    paint: {
-      "line-color": "#404040",
-      "line-width": 2,
-    },
-  },
-  {
-    id: "gl-draw-line-static",
-    type: "line",
-    filter: ["all", ["==", "mode", "static"], ["==", "$type", "LineString"]],
-    layout: {
-      "line-cap": "round",
-      "line-join": "round",
-    },
-    paint: {
-      "line-color": "#404040",
-      "line-width": 2,
-    },
-  },
-  {
-    id: "gl-draw-point-static",
-    type: "circle",
-    filter: ["all", ["==", "mode", "static"], ["==", "$type", "Point"]],
-    paint: {
-      "circle-radius": 5,
-      "circle-color": "#404040",
-    },
-  },
+  // {
+  //   id: "gl-draw-polygon-fill-static",
+  //   type: "fill",
+  //   filter: ["all", ["==", "mode", "static"], ["==", "$type", "Polygon"]],
+  //   paint: {
+  //     "fill-color": "#404040",
+  //     "fill-outline-color": "#404040",
+  //     "fill-opacity": 0.1,
+  //   },
+  // },
+  // {
+  //   id: "gl-draw-polygon-stroke-static",
+  //   type: "line",
+  //   filter: ["all", ["==", "mode", "static"], ["==", "$type", "Polygon"]],
+  //   layout: {
+  //     "line-cap": "round",
+  //     "line-join": "round",
+  //   },
+  //   paint: {
+  //     "line-color": "#404040",
+  //     "line-width": 2,
+  //   },
+  // },
+  // {
+  //   id: "gl-draw-line-static",
+  //   type: "line",
+  //   filter: ["all", ["==", "mode", "static"], ["==", "$type", "LineString"]],
+  //   layout: {
+  //     "line-cap": "round",
+  //     "line-join": "round",
+  //   },
+  //   paint: {
+  //     "line-color": "#404040",
+  //     "line-width": 2,
+  //   },
+  // },
+  // {
+  //   id: "gl-draw-point-static",
+  //   type: "circle",
+  //   filter: ["all", ["==", "mode", "static"], ["==", "$type", "Point"]],
+  //   paint: {
+  //     "circle-radius": 5,
+  //     "circle-color": "#404040",
+  //   },
+  // },
 ];
