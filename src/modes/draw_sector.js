@@ -63,7 +63,6 @@ DrawSector.onTouchMove = DrawSector.onMouseMove = function (state, e) {
 
 DrawSector.onTouchEnd = function (state, e) {
   if (state[Constants.properties.BEARING2]) {
-    console.log("DrawSector.onTouchEnd")
     e.originalEvent.preventDefault();
     e.originalEvent.stopPropagation();
     this.map.fire(Constants.events.CREATE, { features: [state.sector.toGeoJSON()] });
