@@ -63,8 +63,8 @@ export default function(ctx) {
     options.container.appendChild(button);
 
     button.addEventListener('click', (e) => {
-      e.originalEvent.preventDefault();
-      e.originalEvent.stopPropagation();
+      // e.originalEvent.preventDefault();
+      // e.originalEvent.stopPropagation();
 
       const clickedButton = e.target;
       if (clickedButton === activeButton) {

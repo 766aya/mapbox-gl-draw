@@ -28,6 +28,7 @@ export default function render() {
   });
 
   const coldChanged = lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
+  
   newHotIds.forEach(id => renderFeature(id, 'hot'));
   newColdIds.forEach(id => renderFeature(id, 'cold'));
 
