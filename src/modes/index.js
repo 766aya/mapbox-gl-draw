@@ -11,7 +11,6 @@ import draw_circle from './draw_circle';
 import draw_rectangle from "./draw_rectangle";
 import Static from "./static";
 import draw_arrow from './draw_arrow';
-import draw_lay_line from "./draw_lay_line";
 import * as Constants from '../constants';
 
 export default {
@@ -27,5 +26,4 @@ export default {
   [Constants.modes.DRAW_SECTOR]: draw_sector,
   [Constants.modes.DRAW_RECTANGLE]: draw_rectangle,
   [Constants.modes.DRAW_ARROW]: draw_arrow,
-  [Constants.modes.DRAW_LAY_LINE]: draw_lay_line,
 };
