@@ -26,12 +26,15 @@ export default function(ctx, api) {
 
   api.select = function (id) {
     if (!id) {
-      ctx.store.setSelected([]);
+      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT);
     } else {
-      ctx.store.setSelected([id]);
+      const feature = ctx.store.get(id);
+      if (feature.type === 'Point') {
+        ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [id], disabled: false }, { silent: true })
+      } else {
+        ctx.events.changeMode(Constants.modes.DIRECT_SELECT, { featureId: id }, { silent: true })
+      }
     }
-    ctx.store._emitSelectionChange = true;
-    ctx.store.render();
   };
 
   api.renderBatch = function () {

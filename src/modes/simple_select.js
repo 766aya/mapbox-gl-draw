@@ -29,21 +29,15 @@ SimpleSelect.onSetup = function (opts) {
         id => this.getFeature(id) !== undefined
       )
     );
-    this.fireActionable();
-    this.setActionableState({
-      combineFeatures: true,
-      uncombineFeatures: true,
-      trash: true,
-    });
   } else {
     this.setSelected([]);
-    this.fireActionable();
-    this.setActionableState({
-      combineFeatures: true,
-      uncombineFeatures: true,
-      trash: true,
-    });
   }
+  this.fireActionable();
+  this.setActionableState({
+    combineFeatures: true,
+    uncombineFeatures: true,
+    trash: true,
+  });
 
   return state;
 };
