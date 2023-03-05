@@ -1,6 +1,6 @@
 {
   "name": "@766aya/mapbox-gl-draw",
-  "version": "1.4.8",
+  "version": "1.4.10",
   "description": "A drawing component for Mapbox GL JS",
   "homepage": "https://github.com/766aya/mapbox-gl-draw",
   "author": "周庆强",
